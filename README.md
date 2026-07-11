@@ -15,7 +15,7 @@ telemetry — your secrets never leave your machine.
 about the project as a whole: architecture, building from source, and
 contributing.
 
-![CLI Authenticator](readme_assets/cli_authenticator.png "CLI Authenticator")
+![CLI Authenticator](readme_assets/cli_authenticator_v2.png "CLI Authenticator")
 
 ## Table of contents
 
