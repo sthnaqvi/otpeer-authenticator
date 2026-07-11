@@ -11,7 +11,7 @@ once from Google Authenticator, Microsoft Authenticator, or Facebook
 Authenticator, then get live two-factor codes right in your terminal —
 optionally protected with AES-256 encryption and a password.
 
-![CLI Authenticator](https://github.com/sthnaqvi/authenticator-clui/raw/master/readme_assets/cli_authenticator.png "CLI Authenticator")
+![CLI Authenticator](https://github.com/sthnaqvi/authenticator-clui/raw/master/readme_assets/cli_authenticator_v2.png "CLI Authenticator")
 
 # Table of contents
 
