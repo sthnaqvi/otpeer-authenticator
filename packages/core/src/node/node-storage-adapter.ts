@@ -66,4 +66,8 @@ export class NodeStorageAdapter implements StorageAdapter {
         await this.migrateLegacyIfNeeded();
         return fs.pathExists(this.filePath);
     }
+
+    location(): string {
+        return this.filePath;
+    }
 }

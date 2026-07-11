@@ -69,6 +69,10 @@ export class NodeCryptoProvider implements CryptoProvider {
         return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf-8');
     }
 
+    hmacSha1(key: Uint8Array, data: Uint8Array): Uint8Array {
+        return crypto.createHmac('sha1', Buffer.from(key)).update(Buffer.from(data)).digest();
+    }
+
     randomId(): string {
         // UUID v4 from randomBytes — crypto.randomUUID needs Node >=14.17,
         // engines only promise >=14.0

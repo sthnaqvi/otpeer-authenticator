@@ -136,3 +136,122 @@ describe('AccountsStore', () => {
         expect(await store.isValidBackupFile()).toBe(false);
     });
 });
+
+describe('AccountsStore mutations', () => {
+    const SECRET = 'KFCTML3YPBRTS3DMKRIWSUDRNREUUNJU';
+
+    test('add creates an account with id/updatedAt and validates the secret', async () => {
+        const { store } = makeStore();
+        const added = await store.add({ name: 'GitHub', issuer: 'GitHub', secret: SECRET }, '');
+        expect(added.id).toBeTruthy();
+        expect(added.updatedAt).toBeTruthy();
+        expect((await store.get(''))[0].name).toBe('GitHub');
+        await expect(store.add({ name: 'bad', secret: 'not!base32' }, '')).rejects.toThrow(/base32/i);
+        await expect(store.add({ name: '  ', secret: SECRET }, '')).rejects.toThrow(/name/i);
+    });
+
+    test('add works into an encrypted vault', async () => {
+        const { store } = makeStore();
+        await store.seed(SAMPLE_URI, 'pw');
+        await store.add({ name: 'second', secret: SECRET }, 'pw');
+        expect(await store.get('pw')).toHaveLength(2);
+    });
+
+    test('remove deletes exactly the matched account', async () => {
+        const { store } = makeStore();
+        await store.add({ name: 'keep', secret: SECRET }, '');
+        await store.add({ name: 'drop', secret: SECRET }, '');
+        const removed = await store.remove('drop', '');
+        expect(removed.name).toBe('drop');
+        const left = await store.get('');
+        expect(left).toHaveLength(1);
+        expect(left[0].name).toBe('keep');
+        await expect(store.remove('ghost', '')).rejects.toThrow(/no account/i);
+    });
+
+    test('ambiguous matcher throws with candidates; issuer(name) and id prefix disambiguate', async () => {
+        const { store } = makeStore();
+        await store.add({ name: 'me', issuer: 'GitHub', secret: SECRET }, '');
+        await store.add({ name: 'me', issuer: 'GitLab', secret: SECRET }, '');
+
+        await expect(store.remove('me', '')).rejects.toThrow(/multiple accounts/i);
+
+        const removed = await store.remove('GitLab(me)', '');
+        expect(removed.issuer).toBe('GitLab');
+
+        const [remaining] = await store.get('');
+        const byIdPrefix = await store.remove((remaining.id as string).slice(0, 8), '');
+        expect(byIdPrefix.issuer).toBe('GitHub');
+    });
+
+    test('rename changes the name and bumps updatedAt', async () => {
+        const { store } = makeStore();
+        const added = await store.add({ name: 'old', secret: SECRET }, '');
+        await new Promise((r) => setTimeout(r, 5));
+        const renamed = await store.rename('old', 'new', '');
+        expect(renamed.name).toBe('new');
+        expect(Date.parse(renamed.updatedAt as string)).toBeGreaterThan(Date.parse(added.updatedAt as string));
+    });
+
+    test('list never includes secret material', async () => {
+        const { store } = makeStore();
+        await store.add({ name: 'a', secret: SECRET }, '');
+        const [entry] = await store.list('');
+        expect(entry.name).toBe('a');
+        expect(entry).not.toHaveProperty('secret');
+        expect(entry).not.toHaveProperty('totpSecret');
+        expect(entry.id).toBeTruthy();
+    });
+
+    test('merge: adds new, skips identical, reports conflicts, force overwrites keeping id', async () => {
+        const { store } = makeStore();
+        await store.add({ name: 'same', issuer: 'X', secret: SECRET }, '');
+        const [original] = await store.get('');
+
+        const OTHER = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+        const imported = [
+            { name: 'same', issuer: 'X', secret: '', totpSecret: SECRET },      // identical → skip
+            { name: 'same', issuer: 'X', secret: '', totpSecret: OTHER },       // conflict
+            { name: 'brand-new', issuer: 'Y', secret: '', totpSecret: OTHER },  // add
+        ];
+
+        const result = await store.merge(imported as never, '');
+        expect(result).toEqual({ added: 1, skipped: 1, conflicts: ['X(same)'] });
+        expect(await store.get('')).toHaveLength(2);
+
+        const forced = await store.merge([imported[1]] as never, '', { force: true });
+        expect(forced.added).toBe(1);
+        const updated = (await store.get('')).find((a) => a.name === 'same')!;
+        expect(updated.totpSecret).toBe(OTHER);
+        expect(updated.id).toBe(original.id); // identity survives overwrite
+    });
+
+    test('export/decodeBackup round-trip with an independent password', async () => {
+        const { store } = makeStore();
+        await store.seed(SAMPLE_URI, 'vaultpw');
+        const backup = await store.exportVault('vaultpw', 'exportpw');
+
+        const parsed = JSON.parse(backup);
+        expect(parsed.version).toBe(VAULT_VERSION);
+        expect(parsed.is_encrypted).toBe(true);
+
+        const restored = store.decodeBackup(backup, 'exportpw');
+        expect(restored[0].name).toBe('test');
+        expect(() => store.decodeBackup(backup, 'wrongpw')).toThrow();
+        expect(() => store.decodeBackup('not json', 'x')).toThrow(/json/i);
+        await expect(store.exportVault('vaultpw', '')).rejects.toThrow(/export password/i);
+    });
+
+    test('info reports metadata, count only when decryptable', async () => {
+        const { store } = makeStore();
+        expect(await store.info()).toBeNull();
+
+        await store.seed(SAMPLE_URI, 'pw');
+        const locked = await store.info();
+        expect(locked).toMatchObject({ version: VAULT_VERSION, is_encrypted: true });
+        expect(locked!.count).toBeUndefined();
+
+        expect((await store.info('pw'))!.count).toBe(1);
+        expect((await store.info('wrong'))!.count).toBeUndefined();
+    });
+});

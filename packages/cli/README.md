@@ -63,23 +63,40 @@ auth [options]
 
 | Option | Short | Description |
 |---|---|---|
-| `--import <uri>` | `-i` | Import account(s) from an authenticator export URI (`"otpauth-migration://offline?data=..."` — keep the double quotes). Refuses to overwrite an existing vault; `--delete` first if you want to re-import. |
-| `--encrypt` | `-en` | Use together with `--import` to protect the vault with AES-256 encryption. You choose a password at import and enter it on every run. |
+| `--import <uri-or-file>` | `-i` | Import from a Google Authenticator export URI (`"otpauth-migration://..."`), a single `otpauth://totp/...` URI, or an encrypted backup file made with `--export`. Refuses to overwrite an existing vault unless `--merge` is given. |
+| `--merge` | `-m` | With `--import`: merge into the existing vault. Already-present accounts are skipped; same account with a *different* secret is reported as a conflict (add `--force` to overwrite). |
+| `--add [uri]` | `-a` | Add one TOTP account — interactively (name, issuer, secret), or from an `otpauth://totp/...` URI (the format under most websites' 2FA QR codes). The secret is validated before saving. |
+| `--remove <name>` | | Remove one account by name, `issuer(name)`, or id prefix (from `--list`). |
+| `--rename <old> <new>` | | Rename an account. |
+| `--list` | `-l` | List accounts (id prefix + name) — never shows secrets. Add `--json` for machine-readable output. |
+| `--totp <name>` | `-t` | Print the current TOTP code for one account and exit — handy in scripts. |
+| `--copy <name>` | `-c` | Copy the current code to the clipboard (uses pbcopy / xclip / wl-copy / clip). |
+| `--qr <name>` | | Show the account as a QR code in the terminal, ready to scan into a phone app. |
+| `--export [file]` | `-e` | Write an encrypted backup (default `./authenticator-backup.json`). You choose a backup password (asked twice); restore it anywhere with `--import <file>`. |
+| `--info` | | Show vault location, format version, encryption status, and account count. |
+| `--encrypt` | `-en` | With `--import`/`--add` into a *new* vault: protect it with AES-256 encryption. You'll enter the password on every use. |
 | `--run` | `-r` | Show live codes for all accounts in a table that refreshes every second. Asks for your password if the vault is encrypted. |
 | `--delete` | `-d` | Delete **all** imported accounts. Cannot be undone. Requires the password for an encrypted vault (unless `--force`). |
-| `--force` | `-f` | Skip the vault validity/password check for `--delete`. Cannot be combined with `--run`. |
+| `--force` | `-f` | Skip the vault validity/password check for `--delete`; with `--merge`, overwrite conflicting secrets. Cannot be combined with `--run`. |
+| `--json` | | Modifier for `--list` / `--info`: JSON output. |
 | `--version` | `-v` | Print the installed version. |
 | `--help` | `-h` | Show usage help with all options. |
 
 Common combinations:
 
 ```bash
-auth -i "otpauth-migration://offline?data=..."        # plain import
-auth -en -i "otpauth-migration://offline?data=..."    # encrypted import
+auth -i "otpauth-migration://offline?data=..."        # bulk import from Google Authenticator
+auth -a "otpauth://totp/GitHub:me?secret=ABC234..."   # add one account from a site's QR URI
+auth -a                                                # add one account interactively
 auth -r                                                # live codes
-auth -d                                                # delete all accounts
-auth -d -f                                             # force-delete (no password check)
-auth -v                                                # version
+auth -t GitHub                                         # print GitHub's current code
+auth -c GitHub                                         # code straight to clipboard
+auth -l                                                # list accounts
+auth --rename "GitHub(me)" work-github                 # rename (issuer(name) disambiguates)
+auth -e vault-backup.json                              # encrypted backup
+auth -i vault-backup.json -m                           # restore/merge a backup
+auth --qr GitHub                                       # move an account to a phone app
+auth -d -f                                             # force-delete everything
 ```
 
 # Export accounts from Google Authenticator
@@ -181,7 +198,10 @@ When you first run v1.2.0+:
 # Security notes
 
 - Prefer `--encrypt`. The vault password is never stored; losing it means
-  re-importing your accounts.
+  re-importing your accounts (or restoring an `--export` backup).
+- TOTP code generation is implemented in this repository per RFC 6238 and
+  tested against the RFC's official test vectors — no third-party OTP
+  dependency.
 - Encryption uses AES-256-GCM (authenticated encryption) with a random IV
   and salt per encryption, and scrypt for password-based key derivation —
   a tampered or corrupted vault file fails loudly instead of decrypting to

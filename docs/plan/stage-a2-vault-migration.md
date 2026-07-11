@@ -1,9 +1,11 @@
 # Stage A2 — Vault versioning + migration
 
-> **Status: ✅ implemented.** All four changes plus the test suite shipped
-> per the implementation contract below. 35 tests across 6 suites cover the
-> GCM round-trip/tamper cases, both v1→v2 migration paths, storage-path
-> migration, TOTP boundary alignment, base32 vectors, and import parsing.
+> **Status: ✅ implemented, merged to master, and published to npm as
+> `authenticator-clui@1.3.0`.** All four changes plus the test suite shipped
+> per the implementation contract below: 35 tests across 6 suites at merge
+> time, covering the GCM round-trip/tamper cases, both v1→v2 migration
+> paths, storage-path migration, TOTP boundary alignment, base32 vectors,
+> and import parsing (the suite has since grown with Stage B).
 
 ## Goal
 

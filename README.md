@@ -185,7 +185,7 @@ Development is staged; each stage has an in-depth design doc in
 |---|---|---|
 | A1 ✅ | Extract shared core, monorepo restructure, publish hardening | [doc](docs/plan/stage-a1-extract-core.md) |
 | A2 ✅ | Vault format versioning, AES-GCM upgrade, migrations, test suite | [doc](docs/plan/stage-a2-vault-migration.md) |
-| B | CLI: add/remove/rename single accounts, `--list`, merge-import | [doc](docs/plan/stage-b-cli-account-management.md) |
+| B ✅ | CLI: single-account CRUD, code/copy/qr/export, otplib removal | [doc](docs/plan/stage-b-cli-account-management.md) |
 | C | P2P sync v1: PAKE pairing, Wi-Fi/mDNS transport, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
 | D | Electron desktop app (macOS/Ubuntu) | [doc](docs/plan/stage-d-desktop-electron.md) |
 | E | React Native mobile app (iOS/Android) | [doc](docs/plan/stage-e-mobile-react-native.md) |
