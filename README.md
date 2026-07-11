@@ -1,142 +1,246 @@
 # authenticator-clui
 
-[![NPM](https://nodei.co/npm/authenticator-clui.png)](https://nodei.co/npm/authenticator-clui/)
-
-[![Node version](https://img.shields.io/node/v/authenticator-clui.svg?style=flat)](http://nodejs.org/download/)
-[![npm version](https://badge.fury.io/js/authenticator-clui.svg)](https://badge.fury.io/js/authenticator-clui)
-[![Build Status](https://app.travis-ci.com/sthnaqvi/authenticator-clui.svg?branch=master)](https://app.travis-ci.com/sthnaqvi/authenticator-clui)
-[![Coverage](https://img.shields.io/codecov/c/github/sthnaqvi/authenticator-clui.svg?style=flat-square)](https://codecov.io/github/sthnaqvi/authenticator-clui)
-[![Dependency Status](https://img.shields.io/david/sthnaqvi/authenticator-clui.svg?style=flat-square)](https://david-dm.org/sthnaqvi/authenticator-clui)
-[![Inline docs](http://inch-ci.org/github/sthnaqvi/authenticator-clui.svg?branch=master)](http://inch-ci.org/github/sthnaqvi/authenticator-clui)
-[![Known npm Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/npm/authenticator-clui.svg?label=npm%20vulnerabilities&style=flat-square)](https://snyk.io/test/npm/authenticator-clui)
-[![Known Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/sthnaqvi/authenticator-clui.svg?label=repo%20vulnerabilities&style=flat-square&targetFile=package.json)](https://snyk.io/test/github/sthnaqvi/authenticator-clui?targetFile=package.json)
-![Downloads Total](https://img.shields.io/npm/dt/authenticator-clui.svg)
+[![npm version](https://img.shields.io/npm/v/authenticator-clui.svg)](https://www.npmjs.com/package/authenticator-clui)
+[![License: MIT](https://img.shields.io/npm/l/authenticator-clui.svg)](LICENSE)
 ![Downloads Monthly](https://img.shields.io/npm/dm/authenticator-clui.svg)
 
+An open source TOTP authenticator you fully own: import your two-factor
+accounts once from Google/Microsoft/Facebook Authenticator, keep them in an
+encrypted local vault, and read live codes from your terminal. No cloud, no
+telemetry — your secrets never leave your machine.
 
-A simple command-line authenticator with encryption (import accounts from Google Authenticator, Microsoft Authenticator and Facebook Authenticator)
+**👉 If you just want to use the CLI, see the
+[package README](packages/cli/README.md) or the
+[npm page](https://www.npmjs.com/package/authenticator-clui).** This page is
+about the project as a whole: architecture, building from source, and
+contributing.
 
-![alt text](https://github.com/sthnaqvi/authenticator-clui/raw/master/readme_assets/cli_authenticator.png "CLI Authenticator")
+![CLI Authenticator](readme_assets/cli_authenticator.png "CLI Authenticator")
 
+## Table of contents
 
-# Table of contents
+- [Vision](#vision)
+- [Repository structure](#repository-structure)
+- [Architecture](#architecture)
+- [Building from source](#building-from-source)
+- [Running the CLI from a checkout](#running-the-cli-from-a-checkout)
+- [Testing](#testing)
+- [Publishing](#publishing)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
 
-- [authenticator-clui](#authenticator-clui)
-- [Table of contents](#table-of-contents)
-- [Installation](#installation)
-  - [Install with npm globally:](#install-with-npm-globally)
-- [Steps to export accounts from Google Authenticator](#steps-to-export-accounts-from-google-authenticator)
-  - [Get accounts URI](#get-accounts-uri)
-- [Import Accounts](#import-accounts)
-  - [Import without encryption](#import-without-encryption)
-  - [Import with encryption](#import-with-encryption)
-- [Run Authenticator](#run-authenticator)
-  - [Run authenticator with imported account(s)](#run-authenticator-with-imported-accounts)
-- [Permission denied when installing npm modules in OSX](#permission-denied-when-installing-npm-modules-in-osx)
-  - [Option 1: Change the permission to npm's default directory](#option-1-change-the-permission-to-npms-default-directory)
-  - [Option 2: Change npm's default directory to another directory](#option-2-change-npms-default-directory-to-another-directory)
-  - [Option 3: Use a package manager that takes care of this for you.](#option-3-use-a-package-manager-that-takes-care-of-this-for-you)
+## Vision
 
+Today this repo ships one product: the `authenticator-clui` npm package.
+The goal is one authenticator, three surfaces, all sharing the same vault
+logic:
 
-# Installation
+| Surface | Status | Distribution |
+|---|---|---|
+| **CLI** (Node.js) | ✅ published | [npm](https://www.npmjs.com/package/authenticator-clui) |
+| **Desktop** (Electron, macOS/Ubuntu) | 🔜 planned | GitHub Releases (`.dmg`/`.deb`) |
+| **Mobile** (React Native, iOS/Android) | 🔜 planned | App Store / Play Store |
 
-## Install with npm globally:
+Devices will sync **peer-to-peer over local Wi-Fi/Bluetooth — no backend
+server**. Each device keeps its own encrypted vault; sync is an explicit,
+local, device-to-device merge.
 
-```
-npm install -g authenticator-clui
-```
+## Repository structure
 
-# Steps to export accounts from Google Authenticator
-## Get accounts URI
-- Open `Google Authenticator` click on `...`
-- Click `Export accounts` 
-- Click `Continue` select the account(s) which you want to export
-- Click `Export` then you got the QRcode.
-Use [online QRcode decoder to decode](https://zxing.org) the QRcode and get the URI.
-
-<p align="center">
-<img src="https://github.com/sthnaqvi/authenticator-clui/raw/master/readme_assets/export_authenticator_backup.gif" alt="export URI from Google Authenticator" height="550">
-</p>
-
-# Import Accounts
-## Import without encryption
-
-Use [export accounts steps](#steps-to-export-accounts-from-google-authenticator) and copy URI from your phone then run `--import <with copy URI>`
+This is an npm-workspaces monorepo. The root is private and never published
+— only individual packages ship to users, each through its own channel.
 
 ```
-authenticator --import "otpauth-migration://offline?data=CicKFFFFNi94eGM5bGxUUWlQcWxJSjU0EgR0ZXN0GgNvdHAgASgBMAIQARgBIAA%3D"
+authenticator-clui/
+├── package.json            workspace root (private — publishes nothing)
+├── packages/
+│   ├── core/                @authenticator/core — shared engine (TypeScript)
+│   │   └── src/
+│   │       ├── accounts.ts           vault load/save orchestration
+│   │       ├── totp.ts                TOTP code generation, window timing
+│   │       ├── edbase32.ts             RFC 3548 base32 encoding
+│   │       ├── importers/              Google Authenticator export decoding
+│   │       ├── adapters/               StorageAdapter / CryptoProvider interfaces
+│   │       └── node/                    Node.js implementations of the adapters
+│   └── cli/                 authenticator-clui — the published npm package
+│       ├── bin.js                    command-line entry (`authenticator`, `auth`)
+│       ├── core.js                    wires the vendored core to CLI storage paths
+│       ├── src/                       terminal-only code (password prompt, table render)
+│       └── vendor/core/               build-generated copy of core (gitignored)
+├── docs/plan/               in-depth design docs, one per roadmap stage
+└── readme_assets/           images used by the READMEs
 ```
 
-## Import with encryption
+## Architecture
 
-Encrypt accounts data with [AES256 encryption](https://github.com/sthnaqvi/authenticator-clui/blob/master/src/encryption.js) using a strong password. The authenticator will ask the password every time when you run.
+The design rule that everything else follows from: **`@authenticator/core`
+contains all logic that must behave identically on every platform, and it
+never touches a platform API directly.** It talks to the outside world only
+through two injected interfaces:
 
+```ts
+interface StorageAdapter {          // where the vault blob lives
+  read(): Promise<string | null>;
+  write(data: string): Promise<void>;
+  delete(): Promise<void>;
+  exists(): Promise<boolean>;
+}
+
+interface CryptoProvider {          // how the vault is encrypted
+  encrypt(plaintext: string, password: string): string;
+  decrypt(ciphertext: string, password: string): string;
+}
 ```
-authenticator --encrypt --import "otpauth-migration://offline?data=CicKFFFFNi94eGM5bGxUUWlQcWxJSjU0EgR0ZXN0GgNvdHAgASgBMAIQARgBIAA%3D"
+
+Each client supplies its own implementations:
+
+| | Storage | Crypto |
+|---|---|---|
+| CLI / Electron | `fs` → `~/.authenticator-clui/` | Node built-in `crypto` |
+| React Native (planned) | `react-native-mmkv` | `react-native-quick-crypto` |
+
+This is why React Native support is feasible without rewriting the engine:
+RN can't run Node's `fs`/`crypto`, but it can implement these two
+interfaces.
+
+**Why core is vendored, not a published dependency:** `@authenticator/core`
+is `private: true` and exists only inside this repo. The CLI's build step
+copies core's compiled output into `packages/cli/vendor/core`, so the
+published npm tarball is fully self-contained. This keeps core's API free
+to change rapidly during early development. Once it stabilizes, it may be
+published as its own package.
+
+## Building from source
+
+Requirements: Node.js ≥ 14, npm ≥ 7 (for workspaces support).
+
+```bash
+git clone https://github.com/sthnaqvi/authenticator-clui.git
+cd authenticator-clui
+npm install        # installs all workspace deps, links core into cli
+npm run build      # compiles core (tsc) + vendors it into packages/cli
 ```
-* Don't forgot to use `"double quotes"` in account URI
 
-</br>
+`npm run build` at the root does two things, in order:
 
-# Run Authenticator
-## Run authenticator with imported account(s)
+1. `packages/core`: TypeScript → `packages/core/dist/`
+2. `packages/cli`: copies `core/dist` → `packages/cli/vendor/core`
 
+Both output directories are gitignored; they're always regenerated.
+
+## Running the CLI from a checkout
+
+```bash
+cd packages/cli
+node bin.js --help
+node bin.js --import "otpauth-migration://offline?data=..."
+node bin.js --run
 ```
-authenticator --run
+
+The vault is written to `~/.authenticator-clui/accounts.json` — same
+location as an installed copy, so be aware they share state.
+
+## Testing
+
+Core's test suite (Jest) is being introduced alongside the vault-format
+migration work — see the [roadmap](#roadmap). Until then, the smoke test is
+running the CLI flows above against a throwaway import URI.
+
+```bash
+npm test           # runs core's tests (once they land)
 ```
-* If your account will encrypted then every time when you run the authenticator it will ask for the **password**
 
-# Permission denied when installing npm modules in OSX
-Saw this from [Fixing npm permissions](https://docs.npmjs.com/getting-started/fixing-npm-permissions) and it helped, maybe you could give it a shot as well. 
+## Publishing
 
-## Option 1: Change the permission to npm's default directory
+Only `packages/cli` is published, and only from that directory:
 
-1. Find the path to npm's directory:
+```bash
+cd packages/cli
+npm publish
+```
 
-     `npm config get prefix`
+`prepublishOnly` automatically runs the full root build first, so a publish
+can never ship a stale or missing `vendor/core`. Publishing from the repo
+root is blocked by design (`private: true`).
 
- For many systems, this will be `/usr/local`.
+Release checklist:
 
- **WARNING**: If the displayed path is just `/usr`, switch to *Option 2* or you will mess up your permissions.
+1. Bump the version: `cd packages/cli && npm version minor` (or
+   `patch`/`major`). Note: npm does **not** auto-commit or tag in a monorepo
+   subfolder — that's step 4, and why it's listed separately.
+2. `npm install` at the repo root to resync `package-lock.json`, and update
+   the [package README](packages/cli/README.md) if user-facing behavior
+   changed; commit.
+3. `cd packages/cli && npm publish`
+4. Tag the release: `git tag v<version> && git push --tags`
 
-2. Change the owner of npm's directories to the name of the current user (your username):
+## Roadmap
 
-     `sudo chown -R $(whoami) $(npm config get prefix)/{lib/node_modules,bin,share}`
+Development is staged; each stage has an in-depth design doc in
+[`docs/plan/`](docs/plan/):
 
- This changes the permissions of the sub-folders used by npm and some other tools (`lib/node_modules`, `bin`, and `share`).
+| Stage | Scope | Doc |
+|---|---|---|
+| A1 ✅ | Extract shared core, monorepo restructure, publish hardening | [doc](docs/plan/stage-a1-extract-core.md) |
+| A2 | Vault format versioning, AES-GCM upgrade, migrations, test suite | [doc](docs/plan/stage-a2-vault-migration.md) |
+| B | CLI: add/remove/rename single accounts, `--list`, merge-import | [doc](docs/plan/stage-b-cli-account-management.md) |
+| C | P2P sync v1: PAKE pairing, Wi-Fi/mDNS transport, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
+| D | Electron desktop app (macOS/Ubuntu) | [doc](docs/plan/stage-d-desktop-electron.md) |
+| E | React Native mobile app (iOS/Android) | [doc](docs/plan/stage-e-mobile-react-native.md) |
+| F | CI, packaging, store submissions | [doc](docs/plan/stage-f-distribution.md) |
 
-## Option 2: Change npm's default directory to another directory
+## Contributing
 
-There are times when you do not want to change ownership of the default directory that npm uses (i.e. `/usr`) as this could cause some problems, for example if you are sharing the system with other users.
+Contributions are welcome — bug reports, fixes, and stage work alike.
 
-Instead, you can configure npm to use a different directory altogether. In our case, this will be a hidden directory in our home folder.
+**Where things go:**
 
-1. Make a directory for global installations:
+- Platform-independent logic (vault, crypto orchestration, TOTP, import
+  parsing, future sync) → `packages/core`, in TypeScript, behind the
+  adapter interfaces. Core must never `require` `fs`, `crypto`, or any
+  platform module outside `src/node/`.
+- Terminal-specific code (argument parsing, prompts, table rendering) →
+  `packages/cli`.
+- New platform (e.g. a new client) → new `packages/<name>` workspace that
+  consumes core; don't fork core logic into a client.
 
-     `mkdir ~/.npm-global`
+**Workflow:**
 
-2. Configure npm to use the new directory path:
+1. Fork and branch from `master`
+2. `npm install && npm run build`, make your change
+3. Verify the CLI flows still work (`--import`, `--run`, `--delete`,
+   `--encrypt` round-trip) — behavior changes to existing flags need a
+   strong reason
+4. Open a PR describing what changed and why; link the roadmap stage if
+   your change is part of one
 
-     `npm config set prefix '~/.npm-global'`
+**Ground rules:**
 
-3. Open or create a `~/.profile` file and add this line:
+- Existing users' vaults are sacred: any change to the storage location or
+  file format must ship with an automatic migration (see
+  [stage-a2 doc](docs/plan/stage-a2-vault-migration.md) for the pattern).
+- No network calls anywhere in the codebase until Stage C, and then only
+  the explicit local sync path. This project's core promise is that
+  secrets stay on-device.
+- Keep the published tarball auditable: `packages/cli/package.json` uses a
+  `files` whitelist; if you add a runtime file, add it there deliberately.
 
-     `export PATH=~/.npm-global/bin:$PATH`
+**Reporting issues:**
+[github.com/sthnaqvi/authenticator-clui/issues](https://github.com/sthnaqvi/authenticator-clui/issues)
 
-4. Back on the command line, update your system variables:
+## Security
 
-     `source ~/.profile`
+This project handles 2FA secrets, so the bar is deliberately conservative:
 
-**Test**: Download a package globally without using `sudo`.
+- Vault encryption: AES-256 with random IV + salt per encryption, scrypt
+  key derivation (an upgrade to AES-256-GCM authenticated encryption, with
+  transparent re-encryption of existing vaults, is planned in Stage A2)
+- No network, no telemetry, no analytics
+- Found a vulnerability? Please open an issue asking for a private contact
+  channel rather than posting exploit details publicly.
 
-    `npm install node-g.raphael --save`
+## License
 
-Instead of steps 2-4, you can use the corresponding ENV variable (e.g. if you don't want to modify `~/.profile`):
-
-    NPM_CONFIG_PREFIX=~/.npm-global
-
-## Option 3: Use a package manager that takes care of this for you.
-
-If you're doing a fresh install of Node on Mac OS, you can avoid this problem altogether by using the `Homebrew` package manager. `Homebrew` sets things up out of the box with the correct permissions.
-
-`brew install node`
+[MIT](LICENSE) © Sayed Tauseef Naqvi

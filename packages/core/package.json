@@ -1,0 +1,25 @@
+{
+  "name": "@authenticator/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Platform-agnostic account storage, encryption, TOTP/HOTP generation, and import logic shared by the CLI, desktop, and mobile authenticator-clui clients",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p . && mkdir -p dist/importers && cp src/importers/google_auth.proto dist/importers/google_auth.proto",
+    "test": "jest"
+  },
+  "dependencies": {
+    "fs-extra": "^10.0.0",
+    "otplib": "^12.0.1",
+    "protobufjs": "^6.11.4"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.14.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.6.3"
+  }
+}
