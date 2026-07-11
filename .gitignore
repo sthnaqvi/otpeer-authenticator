@@ -2,6 +2,10 @@
 .vscode/*
 .DS_Store
 
+# AI assistant workspaces
+.claude/
+.cursor/
+
 # Logs
 *.log
 npm-debug.log*
@@ -47,3 +51,9 @@ yarn.lock
 # local_data
 local_data
 local_data/*
+
+# TypeScript build output
+packages/*/dist
+
+# Vendored copy of @authenticator/core inlined into the published CLI package
+packages/cli/vendor
