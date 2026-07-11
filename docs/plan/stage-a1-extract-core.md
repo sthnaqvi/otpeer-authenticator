@@ -1,5 +1,11 @@
 # Stage A1 — Extract core (no behavior change)
 
+> **Status: ✅ implemented, merged to master, and published to npm as
+> `authenticator-clui@1.2.0`.** Shipped as planned plus the publish-readiness
+> addendum below (storage-location move pulled forward from A2, TOTP
+> boundary-alignment fix, packaging hardening, README split). All manual
+> acceptance flows verified; the automated test suite landed in Stage A2.
+
 ## Goal
 
 Move all non-CLI-specific logic out of `src/` into a new `packages/core`
