@@ -4,6 +4,12 @@ import path from 'path';
 import { encode as base32Encode } from '../edbase32';
 
 export interface OtpAccount {
+    /** Stable identity for sync/merge — assigned at import or backfilled on migration */
+    id?: string;
+    /** ISO timestamp of last modification — for future last-write-wins merge */
+    updatedAt?: string;
+    /** Tombstone timestamp — reserved for Stage C sync, never set before then */
+    deletedAt?: string;
     secret: string;
     name: string;
     issuer?: string;

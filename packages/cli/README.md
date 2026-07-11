@@ -182,8 +182,11 @@ When you first run v1.2.0+:
 
 - Prefer `--encrypt`. The vault password is never stored; losing it means
   re-importing your accounts.
-- Encryption uses AES-256 with a random IV and salt per encryption, and
-  scrypt for password-based key derivation.
+- Encryption uses AES-256-GCM (authenticated encryption) with a random IV
+  and salt per encryption, and scrypt for password-based key derivation —
+  a tampered or corrupted vault file fails loudly instead of decrypting to
+  garbage. Vaults created by older versions are upgraded automatically the
+  first time you run.
 - Your secrets never leave your machine — this tool has no network access,
   no telemetry, no cloud.
 

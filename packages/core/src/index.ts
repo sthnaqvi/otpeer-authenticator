@@ -1,4 +1,4 @@
-export { AccountsStore, accounts } from './accounts';
+export { AccountsStore, accounts, VAULT_VERSION } from './accounts';
 export { generate2FACode, getTimeout, updateTotp } from './totp';
 export type { TotpAccount } from './totp';
 export type { OtpAccount } from './importers/google-auth';

@@ -144,12 +144,12 @@ location as an installed copy, so be aware they share state.
 
 ## Testing
 
-Core's test suite (Jest) is being introduced alongside the vault-format
-migration work — see the [roadmap](#roadmap). Until then, the smoke test is
-running the CLI flows above against a throwaway import URI.
+Core has a Jest test suite covering encryption (GCM round-trip, tamper
+detection, legacy CBC decrypt), vault format migrations, storage-path
+migration, TOTP window alignment, base32 encoding, and import parsing.
 
 ```bash
-npm test           # runs core's tests (once they land)
+npm test           # runs core's test suite from the repo root
 ```
 
 ## Publishing
@@ -184,7 +184,7 @@ Development is staged; each stage has an in-depth design doc in
 | Stage | Scope | Doc |
 |---|---|---|
 | A1 ✅ | Extract shared core, monorepo restructure, publish hardening | [doc](docs/plan/stage-a1-extract-core.md) |
-| A2 | Vault format versioning, AES-GCM upgrade, migrations, test suite | [doc](docs/plan/stage-a2-vault-migration.md) |
+| A2 ✅ | Vault format versioning, AES-GCM upgrade, migrations, test suite | [doc](docs/plan/stage-a2-vault-migration.md) |
 | B | CLI: add/remove/rename single accounts, `--list`, merge-import | [doc](docs/plan/stage-b-cli-account-management.md) |
 | C | P2P sync v1: PAKE pairing, Wi-Fi/mDNS transport, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
 | D | Electron desktop app (macOS/Ubuntu) | [doc](docs/plan/stage-d-desktop-electron.md) |
@@ -234,9 +234,11 @@ Contributions are welcome — bug reports, fixes, and stage work alike.
 
 This project handles 2FA secrets, so the bar is deliberately conservative:
 
-- Vault encryption: AES-256 with random IV + salt per encryption, scrypt
-  key derivation (an upgrade to AES-256-GCM authenticated encryption, with
-  transparent re-encryption of existing vaults, is planned in Stage A2)
+- Vault encryption: AES-256-GCM authenticated encryption with random IV +
+  salt per encryption and scrypt key derivation — wrong passwords and
+  tampered/corrupted vault files fail loudly at the auth-tag check. Vaults
+  written by older versions (AES-256-CBC) are transparently re-encrypted to
+  GCM on first use.
 - No network, no telemetry, no analytics
 - Found a vulnerability? Please open an issue asking for a private contact
   channel rather than posting exploit details publicly.
