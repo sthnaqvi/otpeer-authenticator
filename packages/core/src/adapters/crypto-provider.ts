@@ -17,4 +17,6 @@ export interface CryptoProvider {
     decryptLegacy?(ciphertext: string, password: string): string;
     /** UUID v4 from the platform's crypto RNG, for account identities. */
     randomId(): string;
+    /** HMAC-SHA1 — the primitive TOTP (RFC 6238) is built on. */
+    hmacSha1(key: Uint8Array, data: Uint8Array): Uint8Array;
 }

@@ -1,8 +1,10 @@
-export { AccountsStore, accounts, VAULT_VERSION } from './accounts';
-export { generate2FACode, getTimeout, updateTotp } from './totp';
-export type { TotpAccount } from './totp';
+export { AccountsStore, accounts, VAULT_VERSION, AmbiguousMatchError } from './accounts';
+export type { MergeResult, VaultInfo } from './accounts';
+export { generateTotp, generate2FACode, getTimeout, updateTotp } from './totp';
+export type { TotpAccount, TotpOptions } from './totp';
 export type { OtpAccount } from './importers/google-auth';
 export { parseAccountsFromUri } from './importers/google-auth';
+export { parseOtpauthUri } from './importers/otpauth';
 export type { StorageAdapter } from './adapters/storage';
 export type { CryptoProvider } from './adapters/crypto-provider';
 export { NodeStorageAdapter } from './node/node-storage-adapter';

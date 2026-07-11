@@ -1,37 +1,59 @@
 'use strict';
 
-const Table = require('cli-table');
 const core = require('../core');
+const ui = require('./ui');
 
-const log = require('./log');
+/** Color the countdown: calm green → warning yellow → urgent red. */
+const expiryCell = (seconds) => {
+    const label = `${String(seconds).padStart(2)}s`;
+    if (seconds <= 5) return ui.red(label);
+    if (seconds <= 10) return ui.yellow(label);
+    return ui.green(label);
+};
+
+const formatCode = (code) => ui.bold(String(code ?? ''));
 
 /**
- * Run authenticator on CMD: fetch accounts, keep their TOTP codes updating,
- * and redraw the table once a second. Rendering/display concerns live here
- * in the CLI package — @authenticator/core only generates codes, it never
- * prints anything.
+ * Live authenticator view. Repaints in place (cursor home + clear-below)
+ * instead of clearing the whole screen each second — no flicker — and
+ * restores the cursor on exit.
  *
  * @param {String} password
  */
 async function run(password) {
-    console.log('Starting authenticator ...');
-    const tr_timeout = 1000; // Table refresh timeout for expiry timer
-    const _accounts = await core.accounts.get(password);
-    if (_accounts && Object.keys(_accounts).length) {
-        console.log(`${Object.keys(_accounts).length} account(s) found`);
-        core.updateTotp(_accounts);
-        setInterval(function () {
-            const table = new Table({
-                head: ['Name', 'Auth Code', 'Expire In'],
-            });
-            for (const account of _accounts) {
-                table.push([account.name_with_issuer, account.totp, core.getTimeout()]);
-            }
-            log(table);
-        }, tr_timeout);
-    } else {
+    const accounts = await core.accounts.get(password);
+    if (!accounts || !accounts.length) {
         throw new Error('No account found');
     }
+
+    core.updateTotp(accounts);
+
+    ui.cursor.clearScreen();
+    ui.cursor.hide();
+    const restore = () => {
+        ui.cursor.show();
+        process.stdout.write('\n');
+        process.exit(0);
+    };
+    process.on('SIGINT', restore);
+    process.on('SIGTERM', restore);
+
+    const paint = () => {
+        const timeout = core.getTimeout();
+        const rows = accounts.map((account) => [
+            ui.cyan(account.name_with_issuer ?? account.name),
+            formatCode(account.totp),
+            expiryCell(timeout),
+        ]);
+
+        const header = `${ui.bold('authenticator-clui')} ${ui.dim(`· ${accounts.length} account(s) · ${new Date().toLocaleTimeString()} · Ctrl+C to exit`)}`;
+        ui.cursor.home();
+        process.stdout.write(`${header}\n${ui.renderTable(['Account', 'Code', 'Expires'], rows)}\n`);
+        ui.cursor.clearBelow();
+    };
+
+    paint();
+    setInterval(paint, 1000);
 }
 
 module.exports = run;

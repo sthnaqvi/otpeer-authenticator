@@ -9,4 +9,6 @@ export interface StorageAdapter {
   write(data: string): Promise<void>;
   delete(): Promise<void>;
   exists(): Promise<boolean>;
+  /** Human-readable description of where the vault lives (file path on Node) */
+  location?(): string;
 }
