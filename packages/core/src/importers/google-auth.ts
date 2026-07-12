@@ -15,8 +15,11 @@ export interface OtpAccount {
     issuer?: string;
     algorithm?: string;
     digits?: number;
+    /** TOTP window in seconds (absent = 30) */
+    period?: number;
     type?: string;
-    counter?: string;
+    /** HOTP counter — string when decoded from protobuf int64, number otherwise */
+    counter?: string | number;
     totpSecret: string;
     [key: string]: unknown;
 }

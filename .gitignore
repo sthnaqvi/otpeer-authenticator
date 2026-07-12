@@ -52,6 +52,9 @@ yarn.lock
 local_data
 local_data/*
 
+# vault backups accidentally exported into the repo (real secrets!)
+authenticator-backup.*
+
 # TypeScript build output
 packages/*/dist
 

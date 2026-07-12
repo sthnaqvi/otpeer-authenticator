@@ -39,12 +39,15 @@ async function run(password) {
     process.on('SIGTERM', restore);
 
     const paint = () => {
-        const timeout = core.getTimeout();
-        const rows = accounts.map((account) => [
-            ui.cyan(account.name_with_issuer ?? account.name),
-            formatCode(account.totp),
-            expiryCell(timeout),
-        ]);
+        const rows = accounts.map((account) => {
+            const params = core.getOtpParams(account);
+            const isHotp = params.type === 'HOTP';
+            return [
+                ui.cyan(account.name_with_issuer ?? account.name),
+                isHotp ? ui.dim('(use -t to generate)') : formatCode(account.totp),
+                isHotp ? ui.dim('—') : expiryCell(core.getTimeout(params.period)),
+            ];
+        });
 
         const header = `${ui.bold('authenticator-clui')} ${ui.dim(`· ${accounts.length} account(s) · ${new Date().toLocaleTimeString()} · Ctrl+C to exit`)}`;
         ui.cursor.home();

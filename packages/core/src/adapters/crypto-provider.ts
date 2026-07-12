@@ -1,9 +1,10 @@
+export type HmacAlgorithm = 'SHA1' | 'SHA256' | 'SHA512';
+
 /**
- * Encrypts/decrypts the vault contents with a user password. Node/Electron
- * implement this with Node's built-in `crypto` module; React Native needs a
- * portable or natively-bridged implementation (e.g. react-native-quick-crypto)
- * since Node's `crypto` module isn't available there. Core never calls
- * `crypto` directly, only through this interface.
+ * Platform crypto seam. Node/Electron implement this with Node's built-in
+ * `crypto` module; React Native implements it with a natively-bridged
+ * library (e.g. react-native-quick-crypto — which supports every primitive
+ * listed here). Core never calls a platform crypto API directly.
  */
 export interface CryptoProvider {
     /** AES-256-GCM (vault format v2+). Output: base64(salt|iv|authTag|ciphertext). */
@@ -17,6 +18,22 @@ export interface CryptoProvider {
     decryptLegacy?(ciphertext: string, password: string): string;
     /** UUID v4 from the platform's crypto RNG, for account identities. */
     randomId(): string;
-    /** HMAC-SHA1 — the primitive TOTP (RFC 6238) is built on. */
+    /** HMAC — the primitive TOTP/HOTP (RFC 6238/4226) are built on. */
+    hmac(algorithm: HmacAlgorithm, key: Uint8Array, data: Uint8Array): Uint8Array;
+    /** @deprecated use hmac('SHA1', ...) — kept for compatibility */
     hmacSha1(key: Uint8Array, data: Uint8Array): Uint8Array;
+
+    // ---- low-level primitives used by competitor-backup importers ----
+
+    /** scrypt KDF with explicit cost parameters (Aegis encrypted backups). */
+    scrypt(
+        password: string,
+        salt: Uint8Array,
+        keyLength: number,
+        options: { N: number; r: number; p: number }
+    ): Uint8Array;
+    /** PBKDF2-HMAC-SHA256 (2FAS encrypted backups). */
+    pbkdf2Sha256(password: string, salt: Uint8Array, iterations: number, keyLength: number): Uint8Array;
+    /** Raw AES-256-GCM open with explicit key/iv/tag. Throws on auth failure. */
+    aesGcmDecrypt(key: Uint8Array, iv: Uint8Array, ciphertext: Uint8Array, authTag: Uint8Array): Uint8Array;
 }

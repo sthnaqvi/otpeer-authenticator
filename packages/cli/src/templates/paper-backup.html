@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>authenticator-clui — encrypted paper backup</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; max-width: 720px; margin: 2rem auto; color: #111; }
+  h1 { font-size: 1.3rem; } h2 { font-size: 1rem; margin-top: 2rem; }
+  .meta { color: #555; font-size: .85rem; }
+  .qrs { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+  figure { margin: 0; text-align: center; }
+  figcaption { font-size: .8rem; color: #555; margin-top: .3rem; }
+  pre { white-space: pre-wrap; word-break: break-all; font-size: .62rem; line-height: 1.5;
+        border: 1px solid #ccc; padding: .8rem; }
+  .warn { border-left: 4px solid #b58900; padding-left: .8rem; }
+  @media print { .noprint { display: none; } }
+</style>
+</head>
+<body>
+<h1>authenticator-clui — encrypted paper backup</h1>
+<p class="meta">Generated {{GENERATED}} · {{ACCOUNT_COUNT}} account(s) · vault format v2 (AES-256-GCM)</p>
+<p class="warn">This sheet is <strong>useless without the backup password</strong> you chose at export
+time — and your accounts are <strong>unrecoverable without this sheet + that password</strong>.
+Store them separately.</p>
+
+<h2>Restore by scanning (mobile app)</h2>
+<div class="qrs">
+{{QR_BLOCKS}}
+</div>
+
+<h2>Restore by text (any device)</h2>
+<p class="meta">Type or OCR the block below into a file, then run: <code>auth --import &lt;file&gt;</code></p>
+<pre>{{PAYLOAD}}</pre>
+
+<p class="noprint meta">Print this page (Cmd/Ctrl+P), then delete the file — it duplicates your encrypted vault.</p>
+</body>
+</html>

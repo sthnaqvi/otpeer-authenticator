@@ -5,12 +5,28 @@ import { decode as base32Decode } from '../edbase32';
  * Parse a standard single-account otpauth:// URI — the format websites show
  * under their 2FA QR codes:
  *
- *   otpauth://totp/Issuer:account?secret=BASE32&issuer=Issuer&digits=6
+ *   otpauth://totp/Issuer:account?secret=BASE32&issuer=Issuer&digits=6&period=30&algorithm=SHA1
+ *   otpauth://hotp/Issuer:account?secret=BASE32&counter=0
  *
+ * Also accepts Steam's non-standard `steam://BASE32SECRET` shorthand.
  * Issuer precedence follows the de-facto convention: the `issuer` query
  * parameter wins over the label prefix when both are present.
  */
 export function parseOtpauthUri(uri: string): OtpAccount {
+    if (uri.toLowerCase().startsWith('steam://')) {
+        const secret = uri.slice('steam://'.length).trim();
+        base32Decode(secret);
+        return {
+            name: 'Steam',
+            issuer: 'Steam',
+            secret,
+            totpSecret: secret.toUpperCase(),
+            type: 'STEAM',
+            digits: 5,
+            period: 30,
+        };
+    }
+
     let url: URL;
     try {
         url = new URL(uri);
@@ -22,11 +38,8 @@ export function parseOtpauthUri(uri: string): OtpAccount {
     }
 
     const type = url.host.toLowerCase();
-    if (type === 'hotp') {
-        throw new Error('HOTP (counter-based) accounts are not supported yet — only TOTP');
-    }
-    if (type !== 'totp') {
-        throw new Error(`Unknown otpauth type "${type}" — expected "totp"`);
+    if (type !== 'totp' && type !== 'hotp') {
+        throw new Error(`Unknown otpauth type "${type}" — expected "totp" or "hotp"`);
     }
 
     const label = decodeURIComponent(url.pathname.replace(/^\//, ''));
@@ -45,11 +58,23 @@ export function parseOtpauthUri(uri: string): OtpAccount {
         throw new Error('otpauth URI has no account name in its label');
     }
 
-    return {
+    const account: OtpAccount = {
         name,
         issuer: url.searchParams.get('issuer') ?? labelIssuer?.trim() ?? undefined,
         secret,
         totpSecret: secret.toUpperCase(),
-        type: 'OTP_TOTP',
+        type: type === 'hotp' ? 'OTP_HOTP' : 'OTP_TOTP',
     };
+
+    const digits = url.searchParams.get('digits');
+    if (digits) account.digits = Number(digits);
+    const algorithm = url.searchParams.get('algorithm');
+    if (algorithm) account.algorithm = algorithm.toUpperCase().replace(/-/g, '');
+    const period = url.searchParams.get('period');
+    if (period) account.period = Number(period);
+    if (type === 'hotp') {
+        account.counter = Number(url.searchParams.get('counter') ?? 0);
+    }
+
+    return account;
 }

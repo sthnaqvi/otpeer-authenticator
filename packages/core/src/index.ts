@@ -1,10 +1,14 @@
 export { AccountsStore, accounts, VAULT_VERSION, AmbiguousMatchError } from './accounts';
 export type { MergeResult, VaultInfo } from './accounts';
-export { generateTotp, generate2FACode, getTimeout, updateTotp } from './totp';
-export type { TotpAccount, TotpOptions } from './totp';
+export { generateTotp, generateHotp, generateSteamCode, generateForAccount, generate2FACode, getTimeout, updateTotp } from './totp';
+export type { TotpAccount, TotpOptions, HotpOptions } from './totp';
+export { getOtpParams } from './otp-params';
+export type { OtpParams, OtpType } from './otp-params';
 export type { OtpAccount } from './importers/google-auth';
 export { parseAccountsFromUri } from './importers/google-auth';
 export { parseOtpauthUri } from './importers/otpauth';
+export { detectImportFormat, parseAegis, parse2fas, parseAndOtp } from './importers/competitors';
+export type { ImportFormat, DetectedImport } from './importers/competitors';
 export type { StorageAdapter } from './adapters/storage';
 export type { CryptoProvider } from './adapters/crypto-provider';
 export { NodeStorageAdapter } from './node/node-storage-adapter';

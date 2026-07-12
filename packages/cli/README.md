@@ -63,7 +63,7 @@ auth [options]
 
 | Option | Short | Description |
 |---|---|---|
-| `--import <uri-or-file>` | `-i` | Import from a Google Authenticator export URI (`"otpauth-migration://..."`), a single `otpauth://totp/...` URI, or an encrypted backup file made with `--export`. Refuses to overwrite an existing vault unless `--merge` is given. |
+| `--import <uri-or-file>` | `-i` | Import from a Google Authenticator export URI (`"otpauth-migration://..."`), a single `otpauth://` / `steam://` URI, a backup made with `--export`, or an **Aegis / 2FAS / andOTP backup file** (auto-detected; password asked only if the file is encrypted). Refuses to overwrite an existing vault unless `--merge` is given. |
 | `--merge` | `-m` | With `--import`: merge into the existing vault. Already-present accounts are skipped; same account with a *different* secret is reported as a conflict (add `--force` to overwrite). |
 | `--add [uri]` | `-a` | Add one TOTP account — interactively (name, issuer, secret), or from an `otpauth://totp/...` URI (the format under most websites' 2FA QR codes). The secret is validated before saving. |
 | `--remove <name>` | | Remove one account by name, `issuer(name)`, or id prefix (from `--list`). |
@@ -72,7 +72,8 @@ auth [options]
 | `--totp <name>` | `-t` | Print the current TOTP code for one account and exit — handy in scripts. |
 | `--copy <name>` | `-c` | Copy the current code to the clipboard (uses pbcopy / xclip / wl-copy / clip). |
 | `--qr <name>` | | Show the account as a QR code in the terminal, ready to scan into a phone app. |
-| `--export [file]` | `-e` | Write an encrypted backup (default `./authenticator-backup.json`). You choose a backup password (asked twice); restore it anywhere with `--import <file>`. |
+| `--export [file]` | `-e` | Write an encrypted backup. Default location is your **home directory** (`~/authenticator-backup.json`), never the current folder — so a backup can't silently land inside a project/repo. An explicit path inside a git repository triggers a warning. You choose a backup password (asked twice); restore anywhere with `--import <file>`. |
+| `--paper` | | With `--export`: write a printable HTML sheet (QR codes + text) instead — offline paper recovery. Useless to anyone without the backup password. |
 | `--info` | | Show vault location, format version, encryption status, and account count. |
 | `--encrypt` | `-en` | With `--import`/`--add` into a *new* vault: protect it with AES-256 encryption. You'll enter the password on every use. |
 | `--run` | `-r` | Show live codes for all accounts in a table that refreshes every second. Asks for your password if the vault is encrypted. |
@@ -94,10 +95,17 @@ auth -c GitHub                                         # code straight to clipbo
 auth -l                                                # list accounts
 auth --rename "GitHub(me)" work-github                 # rename (issuer(name) disambiguates)
 auth -e vault-backup.json                              # encrypted backup
+auth -e recovery-sheet.html --paper                    # printable paper backup
 auth -i vault-backup.json -m                           # restore/merge a backup
+auth -i aegis-export.json -m                           # switch from Aegis (or 2FAS/andOTP)
 auth --qr GitHub                                       # move an account to a phone app
 auth -d -f                                             # force-delete everything
 ```
+
+Full OTP compatibility: 6/7/8-digit codes, 15/30/60s periods, SHA-1/SHA-256/
+SHA-512, HOTP counter accounts (`otpauth://hotp/...` — generate with `-t`,
+the counter advances and persists), and Steam Guard (`steam://SECRET`,
+5-character codes).
 
 # Export accounts from Google Authenticator
 
