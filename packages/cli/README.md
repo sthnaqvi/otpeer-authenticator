@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/authenticator-clui.svg)](https://www.npmjs.com/package/authenticator-clui)
 [![Node version](https://img.shields.io/node/v/authenticator-clui.svg)](https://nodejs.org/en/download/)
-[![License: MIT](https://img.shields.io/npm/l/authenticator-clui.svg)](https://github.com/sthnaqvi/authenticator-clui/blob/master/LICENSE)
+[![License: MIT](https://img.shields.io/npm/l/authenticator-clui.svg)](https://github.com/sthnaqvi/otpeer-authenticator/blob/master/LICENSE)
 ![Downloads Total](https://img.shields.io/npm/dt/authenticator-clui.svg)
 ![Downloads Monthly](https://img.shields.io/npm/dm/authenticator-clui.svg)
 
@@ -11,7 +11,7 @@ once from Google Authenticator, Microsoft Authenticator, or Facebook
 Authenticator, then get live two-factor codes right in your terminal —
 optionally protected with AES-256 encryption and a password.
 
-![CLI Authenticator](https://github.com/sthnaqvi/authenticator-clui/raw/master/readme_assets/cli_authenticator_v2.png "CLI Authenticator")
+![CLI Authenticator](https://github.com/sthnaqvi/otpeer-authenticator/raw/master/readme_assets/cli_authenticator_v2.png "CLI Authenticator")
 
 # Table of contents
 
@@ -120,7 +120,7 @@ the counter advances and persists), and Steam Guard (`steam://SECRET`,
   (any QR reader app works; the decoded text is the URI)
 
 <p align="center">
-<img src="https://github.com/sthnaqvi/authenticator-clui/raw/master/readme_assets/export_authenticator_backup.gif" alt="export URI from Google Authenticator" height="550">
+<img src="https://github.com/sthnaqvi/otpeer-authenticator/raw/master/readme_assets/export_authenticator_backup.gif" alt="export URI from Google Authenticator" height="550">
 </p>
 
 > ⚠️ The exported URI contains your 2FA secrets. Prefer an **offline** QR
@@ -247,14 +247,15 @@ your terminal rather than piping input into it.
 
 # Contributing
 
-This package is part of an open source monorepo that also hosts the shared
-core library (and, in future, desktop and mobile apps). Development setup,
+This package is the CLI of the **OTPeer** project — an open source
+monorepo that also hosts the shared core library (and, in future, the
+"OTPeer Authenticator" desktop and mobile apps). Development setup,
 architecture, and contribution guidelines live in the
-[repository README](https://github.com/sthnaqvi/authenticator-clui#readme).
+[repository README](https://github.com/sthnaqvi/otpeer-authenticator#readme).
 
 Bug reports and feature requests:
-[GitHub issues](https://github.com/sthnaqvi/authenticator-clui/issues).
+[GitHub issues](https://github.com/sthnaqvi/otpeer-authenticator/issues).
 
 # License
 
-[MIT](https://github.com/sthnaqvi/authenticator-clui/blob/master/LICENSE) © Sayed Tauseef Naqvi
+[MIT](https://github.com/sthnaqvi/otpeer-authenticator/blob/master/LICENSE) © Sayed Tauseef Naqvi

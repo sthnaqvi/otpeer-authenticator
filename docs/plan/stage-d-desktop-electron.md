@@ -1,10 +1,21 @@
-# Stage D — Electron desktop app (Mac/Ubuntu)
+# Stage D — Electron desktop app: "OTPeer Authenticator" (Mac/Ubuntu)
 
 ## Goal
 
 Thin UI over `@authenticator/core`. Because Electron's main process *is*
 Node.js, this stage reuses the CLI/Node `StorageAdapter` and `CryptoProvider`
 implementations directly — no bridging layer needed, unlike mobile.
+
+## Branding (per Stage C2)
+
+The app is **"OTPeer Authenticator"** everywhere the user sees a name: app
+bundle (`OTPeer Authenticator.app`), window title, `.dmg`/`.deb`/AppImage
+artifact names, and the About dialog. One full name across desktop and
+mobile — the established cross-platform pattern — so store and desktop
+recognition reinforce each other. Product ID / bundle identifier:
+`app.otpeer.desktop` (assumes otpeer.app registered — see the C2 owner
+checklist). No telemetry, no update pings without consent — the brand
+promise applies to the app shell too.
 
 ## Shape
 

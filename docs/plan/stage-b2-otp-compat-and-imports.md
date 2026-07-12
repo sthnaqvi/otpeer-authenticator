@@ -1,9 +1,9 @@
-# Stage B2 — Full OTP compatibility + competitor imports + paper backup
+# Stage B2 — Full OTP compatibility + backup imports + paper backup
 
 > **Status: ✅ implemented and merged to master** (PR #11, ships as
 > `authenticator-clui@1.4.2`). 111 tests across 9 suites (RFC 4226 Appendix D
 > HOTP vectors, RFC 6238 SHA-1/SHA-256/SHA-512 vectors, Google-enum
-> normalization, all three competitor parsers incl. real encrypted Aegis/2FAS
+> normalization, all three import parsers incl. real encrypted Aegis/2FAS
 > fixtures, HOTP counter persistence). Verified end to end via CLI:
 > 8-digit/60s/SHA-256 accounts render correctly (the params bug is fixed),
 > HOTP `-t` calls produce the RFC vector sequence with a persisted counter,
@@ -32,7 +32,7 @@
 
 Slots between B and C: independent of sync, smaller in scope, and it
 strengthens core (and the market position) before the sync work begins.
-Born out of the July 2026 competitor research — these are the gaps that
+Born out of the July 2026 market research — these are the gaps that
 make switching to (or fully onto) this app hard today.
 
 ## 1. Full OTP compatibility
@@ -40,8 +40,8 @@ make switching to (or fully onto) this app hard today.
 **Bug being fixed:** Google Authenticator imports carry `digits`,
 `algorithm`, and (in otpauth URIs) `period` — but `updateTotp`/`--run`/
 `--totp` currently hardcode 6 digits / 30s / SHA-1. An 8-digit or 60-second
-account imports "successfully" and then renders wrong codes. Table stakes
-in Aegis/Ente/2FAS.
+account imports "successfully" and then renders wrong codes. Full OTP
+parameter support is table stakes for a modern authenticator.
 
 - Honor per-account `digits` (6/7/8), `period` (15/30/60), `algorithm`
   (SHA-1/SHA-256/SHA-512) end to end: `generateTotp` already accepts
@@ -55,14 +55,15 @@ in Aegis/Ente/2FAS.
   `--run` shows HOTP accounts with a "press to generate" hint rather than a
   countdown; `--totp <name>` generates and bumps the counter.
 - **Steam Guard:** 5-character alphanumeric alphabet mode
-  (`steam://` secrets / `type: STEAM`), as Aegis and Ente support.
+  (`steam://` secrets / `type: STEAM`) — widely supported elsewhere and
+  expected by users moving their Steam Guard over.
 - Per-interval expiry display: the run view's countdown currently assumes
   30s for all rows (`getTimeout()` global) — becomes per-account.
 
 Tests: RFC 6238 SHA-256/512 vectors, RFC 4226 HOTP vectors, Steam known
 pairs, importer parsing of digits/period/algorithm.
 
-## 2. Competitor imports (kill the lock-in pain)
+## 2. Backup imports from other apps (make switching effortless)
 
 Parsers in `packages/core/src/importers/`, auto-detected by
 `--import <file>` (same detection chain that today distinguishes backup
@@ -74,16 +75,17 @@ files from URIs), merged through the existing `merge()` machinery:
 - **andOTP** JSON export
 
 Each parser maps to `OtpAccount` and goes through the same merge/conflict
-rules as Stage B. Import from Authy is deliberately out of scope (no
-sanctioned export exists — that's *their* lock-in, and exactly why users
-switch to apps like this one).
+rules as Stage B. Only formats with a
+publicly documented, user-accessible export are in scope. Naming these
+apps here is factual interop documentation (which formats we can read),
+never comparison — per the Stage C2 tone rule.
 
 ## 3. Paper backup sheet
 
 `auth --export --paper [file.html]`: renders the **encrypted** backup
 (same format as `--export`) as QR code(s) in a printable self-contained
-HTML file — offline, fireproof-safe disaster recovery that no competitor
-CLI offers. Restore: scan with the mobile app (Stage E) or point
+HTML file — offline, fireproof-safe disaster recovery from the
+command line. Restore: scan with the mobile app (Stage E) or point
 `--import` at the decoded payload. Reuses `qrcode-terminal`'s underlying
 QR generation or embeds the QR as SVG; the backup password chosen at
 export time remains the only key — a found sheet without the password is
@@ -93,5 +95,5 @@ useless.
 
 - No permission additions on any platform (see Stage C's permissions
   budget — camera-based restore already exists in the Stage E scope)
-- No new dependencies beyond what's already shipped; encrypted competitor
-  formats are decoded with in-repo crypto
+- No new dependencies beyond what's already shipped; encrypted third-party
+  backup formats are decoded with in-repo crypto

@@ -1,6 +1,6 @@
 {
   "name": "authenticator-clui",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "A simple command-line authenticator with encryption (import accounts from Google Authenticator, Microsoft Authenticator and Facebook Authenticator)",
   "main": "index.js",
   "files": [
@@ -17,15 +17,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sthnaqvi/authenticator-clui.git",
+    "url": "git+https://github.com/sthnaqvi/otpeer-authenticator.git",
     "directory": "packages/cli"
   },
   "author": "Sayed Tauseef Naqvi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sthnaqvi/authenticator-clui/issues"
+    "url": "https://github.com/sthnaqvi/otpeer-authenticator/issues"
   },
-  "homepage": "https://github.com/sthnaqvi/authenticator-clui#readme",
+  "homepage": "https://github.com/sthnaqvi/otpeer-authenticator#readme",
   "keywords": [
     "cli",
     "command",
