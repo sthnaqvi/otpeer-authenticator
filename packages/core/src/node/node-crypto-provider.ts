@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { CryptoProvider } from '../adapters/crypto-provider';
+import { CryptoProvider, HmacAlgorithm } from '../adapters/crypto-provider';
 
 /**
  * AES-256-GCM parameters (vault format v2+).
@@ -69,8 +69,41 @@ export class NodeCryptoProvider implements CryptoProvider {
         return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf-8');
     }
 
+    hmac(algorithm: HmacAlgorithm, key: Uint8Array, data: Uint8Array): Uint8Array {
+        const nodeAlgo = { SHA1: 'sha1', SHA256: 'sha256', SHA512: 'sha512' }[algorithm];
+        if (!nodeAlgo) throw new Error(`Unsupported HMAC algorithm: ${algorithm}`);
+        return crypto.createHmac(nodeAlgo, Buffer.from(key)).update(Buffer.from(data)).digest();
+    }
+
+    /** @deprecated use hmac('SHA1', ...) */
     hmacSha1(key: Uint8Array, data: Uint8Array): Uint8Array {
-        return crypto.createHmac('sha1', Buffer.from(key)).update(Buffer.from(data)).digest();
+        return this.hmac('SHA1', key, data);
+    }
+
+    scrypt(
+        password: string,
+        salt: Uint8Array,
+        keyLength: number,
+        options: { N: number; r: number; p: number }
+    ): Uint8Array {
+        return crypto.scryptSync(password, Buffer.from(salt), keyLength, {
+            N: options.N,
+            r: options.r,
+            p: options.p,
+            // default maxmem (32MB) is exactly the requirement for Aegis's
+            // N=32768,r=8 — leave headroom so it doesn't throw
+            maxmem: 256 * options.N * options.r,
+        });
+    }
+
+    pbkdf2Sha256(password: string, salt: Uint8Array, iterations: number, keyLength: number): Uint8Array {
+        return crypto.pbkdf2Sync(password, Buffer.from(salt), iterations, keyLength, 'sha256');
+    }
+
+    aesGcmDecrypt(key: Uint8Array, iv: Uint8Array, ciphertext: Uint8Array, authTag: Uint8Array): Uint8Array {
+        const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(key), Buffer.from(iv));
+        decipher.setAuthTag(Buffer.from(authTag));
+        return Buffer.concat([decipher.update(Buffer.from(ciphertext)), decipher.final()]);
     }
 
     randomId(): string {

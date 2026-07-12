@@ -34,8 +34,20 @@ describe('parseOtpauthUri', () => {
         expect(account.name).toBe('user@mail.com');
     });
 
-    test('rejects HOTP with a clear message', () => {
-        expect(() => parseOtpauthUri('otpauth://hotp/x?secret=MZXW6YTBOI&counter=0')).toThrow(/HOTP.*not supported/i);
+    test('accepts HOTP with its counter', () => {
+        const account = parseOtpauthUri('otpauth://hotp/Bank:acct?secret=MZXW6YTBOI&counter=42');
+        expect(account.type).toBe('OTP_HOTP');
+        expect(account.counter).toBe(42);
+    });
+
+    test('honors digits/period/algorithm parameters', () => {
+        const account = parseOtpauthUri('otpauth://totp/X:y?secret=MZXW6YTBOI&digits=8&period=60&algorithm=SHA256');
+        expect(account).toMatchObject({ digits: 8, period: 60, algorithm: 'SHA256' });
+    });
+
+    test('accepts steam:// shorthand', () => {
+        const account = parseOtpauthUri(`steam://MZXW6YTBOI`);
+        expect(account).toMatchObject({ type: 'STEAM', issuer: 'Steam', digits: 5, totpSecret: 'MZXW6YTBOI' });
     });
 
     test('rejects missing or invalid secrets', () => {

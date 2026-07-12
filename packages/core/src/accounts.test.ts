@@ -242,6 +242,40 @@ describe('AccountsStore mutations', () => {
         await expect(store.exportVault('vaultpw', '')).rejects.toThrow(/export password/i);
     });
 
+    test('generateCodeFor: TOTP returns code + expiry without writing', async () => {
+        const { storage, store } = makeStore();
+        await store.add({ name: 'plain', secret: SECRET }, '');
+        const before = storage.data;
+        const { code, expiresIn } = await store.generateCodeFor('plain', '');
+        expect(code).toMatch(/^\d{6}$/);
+        expect(expiresIn).toBeGreaterThan(0);
+        expect(storage.data).toBe(before); // no vault write for TOTP
+    });
+
+    test('generateCodeFor: HOTP increments and persists the counter', async () => {
+        const { store } = makeStore();
+        await store.merge(
+            [{ name: 'bank', issuer: 'Bank', secret: '', totpSecret: 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ', type: 'OTP_HOTP', counter: 0 }] as never,
+            ''
+        );
+        // RFC 4226 vectors for this secret: counter 0 → 755224, 1 → 287082
+        const first = await store.generateCodeFor('bank', '');
+        expect(first.code).toBe('755224');
+        expect(first.expiresIn).toBeNull();
+        const second = await store.generateCodeFor('bank', '');
+        expect(second.code).toBe('287082');
+        const [account] = await store.get('');
+        expect(account.counter).toBe(2); // persisted
+    });
+
+    test('parseImportFile routes competitor formats through detection', async () => {
+        const { store } = makeStore();
+        const andOtp = JSON.stringify([{ secret: SECRET, label: 'imported', issuer: 'X', type: 'TOTP', digits: 6 }]);
+        const accounts = store.parseImportFile(andOtp);
+        expect(accounts[0]).toMatchObject({ name: 'imported', totpSecret: SECRET });
+        expect(() => store.parseImportFile('{"nope":1}')).toThrow(/unrecognized/i);
+    });
+
     test('info reports metadata, count only when decryptable', async () => {
         const { store } = makeStore();
         expect(await store.info()).toBeNull();

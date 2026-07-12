@@ -16,24 +16,48 @@ const ui = require('./src/ui');
 const passwordPrompt = new PasswordPrompt({ promptMsg: "Enter password: " });
 
 program
-    .name("authenticator")
-    .usage("A simple command-line authenticator (import accounts from Google Authenticator, Microsoft Authenticator and Facebook Authenticator)")
+    .name("auth")
+    .description("A simple command-line authenticator with an encrypted local vault.\nImport from Google/Microsoft/Facebook Authenticator, Aegis, 2FAS, or andOTP — or add accounts directly.\n(`auth` and `authenticator` are the same command.)")
+    .usage("[options]")
+    .showHelpAfterError('(run "auth --help" for usage and examples)')
+    .addHelpText('after', `
+Examples:
+  auth -a                                  add an account interactively
+  auth -a "otpauth://totp/GitHub:me?..."   add from a site's QR-code URI
+  auth -i "otpauth-migration://..."        bulk import from Google Authenticator
+  auth -i aegis-backup.json -m             import & merge an Aegis/2FAS/andOTP backup
+  auth -r                                  live codes table (Ctrl+C to exit)
+  auth -t GitHub                           print the current code for one account
+  auth -c GitHub                           copy the current code to the clipboard
+  auth -e backup.json                      write an encrypted backup file
+  auth -e sheet.html --paper               printable paper backup (QR codes + text)
+  auth --qr GitHub                         show a QR to move an account to a phone app
+
+Modifiers (always combined with another option, never alone):
+  -en/--encrypt   with -i or -a when creating a new vault
+  -m/--merge      with -i when a vault already exists
+  --paper         with -e for the printable sheet
+  --json          with -l or --info for machine-readable output
+  -f/--force      with -d (skip password check) or -i -m (overwrite conflicts)
+
+Docs: https://github.com/sthnaqvi/authenticator-clui#readme`)
     .version(require('./package.json').version, '-v, --version', 'Print the installed version')
-    .option('-i, --import <uri-or-file>', 'Import account(s) from an "otpauth-migration://" export URI, a single "otpauth://" URI, or an encrypted backup file created with --export')
-    .option('-en, --encrypt', 'Encrypt the vault with AES256 using a password (with --import or --add into a new vault)')
-    .option('-m, --merge', 'With --import: merge into the existing vault instead of refusing')
+    .option('-i, --import <uri-or-file>', 'Import account(s) from an "otpauth-migration://" export URI, a single "otpauth://" URI, a backup made with --export, or an Aegis/2FAS/andOTP backup file (auto-detected)')
+    .option('-en, --encrypt', '(use with -i/-a on a new vault) Encrypt the vault with AES-256 using a password of your choice')
+    .option('-m, --merge', '(use with -i) Merge into the existing vault instead of refusing')
     .option('-a, --add [otpauth-uri]', 'Add a single TOTP account: interactive prompts, or pass an "otpauth://totp/..." URI')
     .option('--remove <name>', 'Remove one account by name, issuer(name), or id prefix')
     .option('--rename <names...>', 'Rename an account: --rename <old> <new>')
     .option('-l, --list', 'List accounts (names/issuers/ids — never secrets)')
-    .option('--json', 'With --list or --info: machine-readable JSON output')
+    .option('--json', '(use with -l/--info) Machine-readable JSON output')
     .option('-t, --totp <name>', 'Print the current TOTP code for one account and exit')
     .option('-c, --copy <name>', 'Copy the current code for one account to the clipboard')
-    .option('-e, --export [file]', 'Write an encrypted backup file (default: ./authenticator-backup.json)')
+    .option('-e, --export [file]', 'Write an encrypted backup file (default: ~/authenticator-backup.json — never the current directory)')
+    .option('--paper', '(use with -e) Render the encrypted backup as a printable HTML sheet with QR codes, e.g. auth -e sheet.html --paper')
     .option('--qr <name>', 'Show an account as a QR code to scan into a phone app')
     .option('--info', 'Show vault location, format version, encryption status and account count')
     .option('-d, --delete', 'Delete imported accounts !!!Can\'t restore')
-    .option('-f, --force', 'Forcefully execute operations (skip checks / overwrite merge conflicts)')
+    .option('-f, --force', '(use with -d or -i -m) Skip the password check when deleting / overwrite conflicting secrets when merging')
     .option('-r, --run', 'Run authenticator with imported accounts')
     .parse(process.argv);
 
@@ -59,21 +83,42 @@ const findForDisplay = async (matcher, password) => {
 };
 
 const buildOtpauthUri = (account) => {
+    const params = core.getOtpParams(account);
     const label = account.issuer
         ? `${encodeURIComponent(account.issuer)}:${encodeURIComponent(account.name)}`
         : encodeURIComponent(account.name);
-    const issuerParam = account.issuer ? `&issuer=${encodeURIComponent(account.issuer)}` : '';
-    return `otpauth://totp/${label}?secret=${account.totpSecret}${issuerParam}`;
+    const query = [`secret=${account.totpSecret}`];
+    if (account.issuer) query.push(`issuer=${encodeURIComponent(account.issuer)}`);
+    if (params.algorithm !== 'SHA1') query.push(`algorithm=${params.algorithm}`);
+    if (params.digits !== 6 && params.type !== 'STEAM') query.push(`digits=${params.digits}`);
+    if (params.period !== 30) query.push(`period=${params.period}`);
+    if (params.type === 'HOTP') query.push(`counter=${params.counter}`);
+    const kind = params.type === 'HOTP' ? 'hotp' : 'totp';
+    return `otpauth://${kind}/${label}?${query.join('&')}`;
 };
 
-/** Parse --import input: backup file path, migration URI, or single otpauth URI. */
+/**
+ * Parse --import input: a migration URI, a single otpauth:// or steam://
+ * URI, or a backup file — ours, Aegis, 2FAS, or andOTP (auto-detected,
+ * password prompted only when the file is actually encrypted).
+ */
 const parseImportSource = async (source) => {
     if (source.startsWith('otpauth-migration://')) return core.parseAccountsFromUri(source);
-    if (source.startsWith('otpauth://')) return [core.parseOtpauthUri(source)];
+    if (source.startsWith('otpauth://') || source.toLowerCase().startsWith('steam://')) {
+        return [core.parseOtpauthUri(source)];
+    }
     if (fs.existsSync(source)) {
         const raw = fs.readFileSync(source, 'utf-8');
-        const exportPassword = await new PasswordPrompt({ promptMsg: 'Backup password: ' }).start();
-        return core.accounts.decodeBackup(raw, exportPassword);
+        const detected = core.accounts.detectImport(raw);
+        if (!detected) {
+            throw new Error('Unrecognized backup file — expected authenticator-clui, Aegis, 2FAS, or andOTP format');
+        }
+        let filePassword;
+        if (detected.encrypted) {
+            const label = detected.format === 'authenticator-clui-backup' ? 'Backup' : `${detected.format} backup`;
+            filePassword = await new PasswordPrompt({ promptMsg: `${label} password: ` }).start();
+        }
+        return core.accounts.parseImportFile(raw, filePassword);
     }
     throw new Error('Import source must be an otpauth-migration:// URI, an otpauth:// URI, or a backup file path');
 };
@@ -111,7 +156,16 @@ const handleAdd = async (options) => {
     let input;
     if (typeof options.add === 'string') {
         const parsed = core.parseOtpauthUri(options.add);
-        input = { name: parsed.name, issuer: parsed.issuer, secret: parsed.totpSecret };
+        input = {
+            name: parsed.name,
+            issuer: parsed.issuer,
+            secret: parsed.totpSecret,
+            type: parsed.type,
+            digits: parsed.digits,
+            period: parsed.period,
+            algorithm: parsed.algorithm,
+            counter: parsed.counter,
+        };
     } else {
         const name = await question('Account name: ');
         const issuer = await question('Issuer (optional): ');
@@ -131,12 +185,40 @@ const handleAdd = async (options) => {
     ui.ok(`Added ${displayName(added)}`);
 };
 
+/** Is this path inside a git working tree? (walk up looking for .git) */
+const isInsideGitRepo = (targetPath) => {
+    let dir = path.dirname(path.resolve(targetPath));
+    while (true) {
+        if (fs.existsSync(path.join(dir, '.git'))) return true;
+        const parent = path.dirname(dir);
+        if (parent === dir) return false;
+        dir = parent;
+    }
+};
+
 const handleExport = async (options, password) => {
-    const file = typeof options.export === 'string' ? options.export : 'authenticator-backup.json';
+    const os = require('os');
+    const defaultFile = path.join(os.homedir(), options.paper ? 'authenticator-backup.html' : 'authenticator-backup.json');
+    // Default goes to the HOME directory, never the current one — a vault
+    // backup must not land inside whatever repo/project you happen to be
+    // standing in. An explicit path is honored, with a warning if risky.
+    const file = typeof options.export === 'string' ? options.export : defaultFile;
+    if (typeof options.export === 'string' && isInsideGitRepo(file)) {
+        ui.warn(`${path.resolve(file)} is inside a git repository — don't commit this file, it duplicates your vault`);
+    }
     const exportPassword = await new PasswordPrompt({ promptMsg: 'Backup password: ' }).start();
     const confirm = await new PasswordPrompt({ promptMsg: 'Confirm backup password: ' }).start();
     if (!exportPassword || exportPassword !== confirm) return fail('Passwords empty or did not match — nothing exported');
     const backup = await core.accounts.exportVault(password, exportPassword);
+
+    if (options.paper) {
+        const { renderPaperBackupHtml } = require('./src/paper');
+        const count = (await core.accounts.list(password)).length;
+        fs.writeFileSync(path.resolve(file), renderPaperBackupHtml(backup, count));
+        ui.ok(`Printable encrypted backup written to ${path.resolve(file)}`);
+        return ui.info('Print it, then delete the file — it duplicates your encrypted vault');
+    }
+
     fs.writeFileSync(path.resolve(file), backup);
     ui.ok(`Encrypted backup written to ${path.resolve(file)}`);
 };
@@ -168,16 +250,14 @@ const processOpts = async (options) => {
         let password = "";
         if (!options.force) {
             if (!(await core.accounts.isValidBackupFile())) {
-                ui.err("Accounts does not exist");
-                return program.help({ error: true });
+                return fail('No accounts yet. Add one interactively with `auth -a`, or import: auth -i "otpauth-migration://..."');
             }
             if (await core.accounts.isEncrypted()) {
                 password = await passwordPrompt.start();
             }
             if (!(await core.accounts.isValid(password))) {
                 if (password) return fail("Invalid password. Please try again.");
-                ui.err("Account(s) are not valid.");
-                return program.help({ error: true });
+                return fail('Vault file exists but is not readable — it may be corrupted. Restore a backup with `auth -i <backup-file>` after `auth -d -f`');
             }
         }
 
@@ -195,22 +275,22 @@ const processOpts = async (options) => {
         }
 
         if (options.totp) {
-            const account = await findForDisplay(options.totp, password);
-            return console.log(core.generateTotp(account.totpSecret));
+            const { code } = await core.accounts.generateCodeFor(options.totp, password);
+            return console.log(code);
         }
 
         if (options.copy) {
-            const account = await findForDisplay(options.copy, password);
-            const code = core.generateTotp(account.totpSecret);
+            const { code, account, expiresIn } = await core.accounts.generateCodeFor(options.copy, password);
             await copyToClipboard(code);
-            return ui.ok(`Code for ${displayName(account)} copied to clipboard (expires in ${core.getTimeout()}s)`);
+            const expiry = expiresIn === null ? 'HOTP — counter advanced' : `expires in ${expiresIn}s`;
+            return ui.ok(`Code for ${displayName(account)} copied to clipboard (${expiry})`);
         }
 
         if (options.qr) {
             const account = await findForDisplay(options.qr, password);
-            const qrcode = require('qrcode-terminal');
+            const { toTerminal } = require('./src/qr');
             console.log(`Scan to add ${ui.cyan(displayName(account))}:`);
-            return qrcode.generate(buildOtpauthUri(account), { small: true });
+            return console.log(toTerminal(buildOtpauthUri(account)));
         }
 
         if (options.remove) {
@@ -228,16 +308,28 @@ const processOpts = async (options) => {
 
         if (options.run) {
             if (options.force) {
-                ui.err("Can't run with --force");
-                return program.help({ error: true });
+                return fail("--run can't be combined with --force (the password check protects the live view)");
             }
             return run(password);
         }
 
-        // a lone --force/--encrypt/--json/--merge does nothing by itself
-        return program.help({ error: true });
+        // Only modifier flags were given — tell the user exactly how each
+        // one is meant to be used instead of dumping the full help.
+        const MODIFIER_HINTS = [
+            ['paper', '--paper is used together with --export:\n    auth -e sheet.html --paper'],
+            ['merge', '--merge is used together with --import:\n    auth -i <file-or-uri> -m'],
+            ['json', '--json is used together with --list or --info:\n    auth -l --json'],
+            ['encrypt', '-en/--encrypt is used when creating a vault:\n    auth -en -i "otpauth-migration://..."   or   auth -en -a'],
+            ['force', '--force is used together with --delete or --import --merge:\n    auth -d -f'],
+        ];
+        for (const [key, hint] of MODIFIER_HINTS) {
+            if (options[key] !== undefined) {
+                return fail(`${hint}\n  Run \`auth --help\` for all options and examples.`);
+            }
+        }
+        return fail('Nothing to do — run `auth --help` for usage and examples.');
     } else {
-        program.help({ error: true });
+        program.help();
     };
 }
 

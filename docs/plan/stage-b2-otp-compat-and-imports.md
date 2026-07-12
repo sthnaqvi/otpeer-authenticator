@@ -1,5 +1,34 @@
 # Stage B2 — Full OTP compatibility + competitor imports + paper backup
 
+> **Status: ✅ implemented.** 111 tests across 9 suites (RFC 4226 Appendix D
+> HOTP vectors, RFC 6238 SHA-1/SHA-256/SHA-512 vectors, Google-enum
+> normalization, all three competitor parsers incl. real encrypted Aegis/2FAS
+> fixtures, HOTP counter persistence). Verified end to end via CLI:
+> 8-digit/60s/SHA-256 accounts render correctly (the params bug is fixed),
+> HOTP `-t` calls produce the RFC vector sequence with a persisted counter,
+> `steam://` accounts produce 5-char Steam codes, Aegis/2FAS/andOTP files
+> import+merge with params intact, and a paper backup exported → wiped →
+> restored recovers every account. One design note: HOTP generation lives on
+> `AccountsStore.generateCodeFor` (not totp.ts) because it must persist the
+> counter increment; the `--run` table shows HOTP rows as "(use -t to
+> generate)" rather than burning counters on a timer.
+>
+> **Post-implementation hygiene review** (user-requested) fixed four gaps:
+> the paper sheet's HTML moved from an inline string to
+> `src/templates/paper-backup.html`; QR generation switched from reaching
+> into `qrcode-terminal/vendor/…` internals to the *declared*
+> `qrcode-generator` dependency (public API; qrcode-terminal dropped, a
+> ~20-line half-block terminal renderer in `src/qr.js` replaces it); dead
+> `src/log.js` (with its phantom commented `jetty` require) deleted; and
+> password prompts now work on piped/non-TTY stdin via one shared line
+> reader — multi-prompt flows like `printf "vaultpw\nbackuppw\nbackuppw\n" |
+> auth -e sheet.html --paper` are fully scriptable (previously crashed on
+> setRawMode). A fifth gap surfaced by real-world use: `--export`'s default
+> filename landed in the CWD — which, when run from a checkout, put a real
+> vault backup inside the open-source repo. Defaults now write to the home
+> directory; an explicit path inside any git working tree gets a ⚠ warning;
+> `.gitignore` additionally blocks `authenticator-backup.*` as a backstop.
+
 Slots between B and C: independent of sync, smaller in scope, and it
 strengthens core (and the market position) before the sync work begins.
 Born out of the July 2026 competitor research — these are the gaps that

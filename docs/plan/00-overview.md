@@ -57,7 +57,7 @@ painful.
 | A1 ✅ | Extract current logic into `packages/core`, zero behavior change | [stage-a1-extract-core.md](stage-a1-extract-core.md) |
 | A2 ✅ | Vault versioning + migrations (storage path, GCM upgrade, id/timestamps) | [stage-a2-vault-migration.md](stage-a2-vault-migration.md) |
 | B ✅ | CLI: single-account CRUD, code/copy/qr/export, otplib removal | [stage-b-cli-account-management.md](stage-b-cli-account-management.md) |
-| B2 | Full OTP compatibility (8-digit/60s/SHA-256/HOTP/Steam), competitor imports, paper backup | [stage-b2-otp-compat-and-imports.md](stage-b2-otp-compat-and-imports.md) |
+| B2 ✅ | Full OTP compatibility (8-digit/60s/SHA-256/HOTP/Steam), competitor imports, paper backup | [stage-b2-otp-compat-and-imports.md](stage-b2-otp-compat-and-imports.md) |
 | C | Sync v1: QR-paired high-entropy code, direct TCP, LWW merge, minimal permissions | [stage-c-sync-protocol.md](stage-c-sync-protocol.md) |
 | D | Electron desktop app | [stage-d-desktop-electron.md](stage-d-desktop-electron.md) |
 | E | React Native mobile app | [stage-e-mobile-react-native.md](stage-e-mobile-react-native.md) |

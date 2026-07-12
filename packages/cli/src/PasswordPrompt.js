@@ -7,6 +7,35 @@ const CTRL_D = String.fromCharCode(4);
 const BACKSPACE = 8;
 const DEL = 127; // what the delete key actually sends on macOS/Linux
 
+/**
+ * Non-TTY stdin (piped/scripted input) is read through ONE shared readline
+ * interface that dispenses lines to prompts in order. Creating a fresh
+ * interface per prompt would discard whatever the first one had buffered —
+ * multi-prompt flows (vault password, then backup password twice) would
+ * silently lose every line after the first.
+ */
+let sharedLineReader = null;
+const bufferedLines = [];
+const lineWaiters = [];
+function readLineFromPipe(input) {
+    if (!sharedLineReader) {
+        sharedLineReader = readline.createInterface({ input });
+        sharedLineReader.on('line', (line) => {
+            const waiter = lineWaiters.shift();
+            if (waiter) waiter(line);
+            else bufferedLines.push(line);
+        });
+        sharedLineReader.on('close', () => {
+            // stdin ended: unblock any waiting prompt with empty input
+            while (lineWaiters.length) lineWaiters.shift()('');
+        });
+    }
+    return new Promise((resolve) => {
+        if (bufferedLines.length) resolve(bufferedLines.shift());
+        else lineWaiters.push(resolve);
+    });
+}
+
 class PasswordPrompt {
     constructor(opts) {
         const { promptMsg = "password:", passMaxLength } = opts
@@ -21,6 +50,18 @@ class PasswordPrompt {
             // reset per call so the prompt is reusable (e.g. password confirmation)
             this.input = ''
             stdout.write(this.promptMsg)
+
+            // Piped/scripted stdin (no TTY) can't do raw-mode masking —
+            // read a plain line instead so non-interactive use still works
+            // (e.g. printf "pw\n" | auth ...). Nothing is echoed anyway.
+            if (!this.stdin.isTTY || typeof this.stdin.setRawMode !== 'function') {
+                readLineFromPipe(this.stdin).then((line) => {
+                    stdout.write('\n')
+                    resolve(line)
+                })
+                return
+            }
+
             this.stdin.setRawMode(true)
             this.stdin.resume()
             this.stdin.setEncoding('utf-8')
