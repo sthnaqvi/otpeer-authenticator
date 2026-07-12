@@ -1,11 +1,13 @@
 # Stage B — CLI account management + otplib removal
 
-> **Status: ✅ implemented.** Scope grew substantially from the original
+> **Status: ✅ implemented and merged to master** (PR #7, plus post-merge
+> hotfix PR #8 — see "Post-merge hotfix" below; ships as
+> `authenticator-clui@1.4.0`). Scope grew substantially from the original
 > draft after review + user selection (see "Scope evolution" below): besides
-> single-account CRUD it now covers the otplib removal, `--code`/`--copy`,
+> single-account CRUD it now covers the otplib removal, `--totp`/`--copy`,
 > encrypted backups, `otpauth://` import, terminal QR, `--list --json`, and
-> `--info`. All behavior is covered by core unit tests plus end-to-end CLI
-> runs against a sandboxed `$HOME`.
+> `--info`. All behavior is covered by core unit tests (70 tests, 7 suites)
+> plus end-to-end CLI runs against a sandboxed `$HOME`.
 
 ## Scope evolution
 
@@ -83,3 +85,22 @@ including the trailing newline — as "one character" and Enter never fired.
 Fixed to iterate characters within a chunk; also made the prompt reusable
 (input reset per `start()`, listener properly removed) since `--export`
 prompts twice for confirmation.
+
+## Post-merge hotfix (PR #8)
+
+Landed right after the Stage B merge, on `hotfix/protobufjs-audit-readme`:
+
+- **protobufjs 6.11.4 → 8.7.0.** `npm audit` flagged protobufjs ≤7.6.2
+  critical (code injection, prototype pollution, multiple DoS advisories —
+  GHSA-xq3m-2v4x-88gg et al.). Our usage (`loadSync`/`lookupType`/`decode`/
+  `toObject` for the Google Authenticator migration payload) is unchanged
+  across the major bump; proven by the import test suite and a live
+  `auth -i "otpauth-migration://..."` run. Audit is now clean
+  (0 vulnerabilities) and the bump shed 11 transitive packages.
+- **README snapshot refreshed.** New `readme_assets/cli_authenticator_v2.png`
+  shows the Stage B live view (bordered table, cyan accounts, colored
+  countdown) with **dummy accounts only** (`demo@example.com`, fabricated
+  codes). The SVG source sits next to it, so future UI changes regenerate
+  the image via `sips -s format png -z 600 1640 cli_authenticator_v2.svg
+  --out cli_authenticator_v2.png` instead of a screenshot session. The old
+  `cli_authenticator.png` remains in the repo for history.
