@@ -14,7 +14,7 @@ packages/desktop/
   src/main/              Electron main process — owns the vault (StorageAdapter,
                           CryptoProvider, sync networking), same as the CLI does
   src/renderer/           React UI — account list, live codes, add/remove/rename,
-                          sync pairing flow (enter/generate PAKE code)
+                          sync pairing flow (show/enter the one-time pairing code)
   src/preload.ts          IPC bridge exposing a narrow, typed API from main to
                           renderer (never expose raw fs/crypto to the renderer)
 ```
@@ -28,8 +28,9 @@ the vault password or raw ciphertext handling.
 - Account list view with live-refreshing codes (equivalent of `--run`)
 - Add/remove/rename accounts (equivalent of Stage B's CLI flags, as UI)
 - Import flow (paste or file-drop the Google Authenticator export URI)
-- Sync UI: "Pair with another device" → shows/accepts the PAKE code from
-  Stage C, then a merge confirmation before applying
+- Sync UI: "Pair with another device" → shows the `authsync://` pairing
+  code/QR from Stage C (or accepts a pasted one), then a merge confirmation
+  before applying
 - Password prompt / vault unlock screen on launch if encrypted
 
 ## Non-goals

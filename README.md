@@ -43,9 +43,10 @@ logic:
 | **Desktop** (Electron, macOS/Ubuntu) | 🔜 planned | GitHub Releases (`.dmg`/`.deb`) |
 | **Mobile** (React Native, iOS/Android) | 🔜 planned | App Store / Play Store |
 
-Devices will sync **peer-to-peer over local Wi-Fi/Bluetooth — no backend
-server**. Each device keeps its own encrypted vault; sync is an explicit,
-local, device-to-device merge.
+Devices will sync **peer-to-peer over the local network, QR-paired — no
+backend server, no account, and no permissions beyond the camera and iOS's
+local-network prompt**. Each device keeps its own encrypted vault; sync is
+an explicit, local, device-to-device merge.
 
 ## Repository structure
 
@@ -186,10 +187,12 @@ Development is staged; each stage has an in-depth design doc in
 | A1 ✅ | Extract shared core, monorepo restructure, publish hardening | [doc](docs/plan/stage-a1-extract-core.md) |
 | A2 ✅ | Vault format versioning, AES-GCM upgrade, migrations, test suite | [doc](docs/plan/stage-a2-vault-migration.md) |
 | B ✅ | CLI: single-account CRUD, code/copy/qr/export, otplib removal | [doc](docs/plan/stage-b-cli-account-management.md) |
-| C | P2P sync v1: PAKE pairing, Wi-Fi/mDNS transport, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
+| B2 | Full OTP compatibility (8-digit/60s/SHA-256/HOTP/Steam), Aegis/2FAS/andOTP imports, paper backup | [doc](docs/plan/stage-b2-otp-compat-and-imports.md) |
+| C | P2P sync v1: QR-paired local sync, minimal permissions, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
 | D | Electron desktop app (macOS/Ubuntu) | [doc](docs/plan/stage-d-desktop-electron.md) |
 | E | React Native mobile app (iOS/Android) | [doc](docs/plan/stage-e-mobile-react-native.md) |
 | F | CI, packaging, store submissions | [doc](docs/plan/stage-f-distribution.md) |
+| G | Browser extension (desktop-app native messaging) | [doc](docs/plan/stage-g-browser-extension.md) |
 
 ## Contributing
 
