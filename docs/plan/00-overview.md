@@ -12,7 +12,7 @@ Future: the same account vault, usable from three surfaces —
 - Desktop app for Mac/Ubuntu (Electron)
 - Mobile app for iPhone/Android (React Native)
 
-— kept in sync **peer-to-peer over local Wi-Fi / Bluetooth, with no backend
+— kept in sync **peer-to-peer over the local network, QR-paired, with no backend
 server**. Each device holds its own encrypted vault; sync is an explicit,
 local, device-to-device operation, not a hosted service.
 
@@ -54,18 +54,20 @@ painful.
 
 | Stage | One-line scope | Depth doc |
 |---|---|---|
-| A1 | Extract current logic into `packages/core`, zero behavior change | [stage-a1-extract-core.md](stage-a1-extract-core.md) |
-| A2 | Vault versioning + migrations (storage path, GCM upgrade, id/timestamps) | [stage-a2-vault-migration.md](stage-a2-vault-migration.md) |
-| B | CLI: single add/delete/rename, `--list`, merge-on-import | [stage-b-cli-account-management.md](stage-b-cli-account-management.md) |
-| C | Sync v1: PAKE pairing, Wi-Fi/mDNS transport, BLE proximity, LWW merge | [stage-c-sync-protocol.md](stage-c-sync-protocol.md) |
+| A1 ✅ | Extract current logic into `packages/core`, zero behavior change | [stage-a1-extract-core.md](stage-a1-extract-core.md) |
+| A2 ✅ | Vault versioning + migrations (storage path, GCM upgrade, id/timestamps) | [stage-a2-vault-migration.md](stage-a2-vault-migration.md) |
+| B ✅ | CLI: single-account CRUD, code/copy/qr/export, otplib removal | [stage-b-cli-account-management.md](stage-b-cli-account-management.md) |
+| B2 | Full OTP compatibility (8-digit/60s/SHA-256/HOTP/Steam), competitor imports, paper backup | [stage-b2-otp-compat-and-imports.md](stage-b2-otp-compat-and-imports.md) |
+| C | Sync v1: QR-paired high-entropy code, direct TCP, LWW merge, minimal permissions | [stage-c-sync-protocol.md](stage-c-sync-protocol.md) |
 | D | Electron desktop app | [stage-d-desktop-electron.md](stage-d-desktop-electron.md) |
 | E | React Native mobile app | [stage-e-mobile-react-native.md](stage-e-mobile-react-native.md) |
 | F | Distribution polish, CI, packaging | [stage-f-distribution.md](stage-f-distribution.md) |
+| G | Browser extension via desktop-app native messaging (outline) | [stage-g-browser-extension.md](stage-g-browser-extension.md) |
 
 ## Cross-cutting non-goals (v1)
 
-- No relay/internet sync when devices aren't on the same LAN or in BLE range —
-  pure local-first, matching the explicit "no backend for now" requirement.
+- No relay/internet sync when devices can't reach each other on a local
+  network — pure local-first, matching the explicit "no backend" requirement.
 - No multi-user / shared-vault concept — one vault per device identity, synced
   copies, not a shared server-side record.
 - No changes to the public CLI command surface in Stage A — `--import`,
