@@ -1,6 +1,7 @@
 # Stage B2 — Full OTP compatibility + competitor imports + paper backup
 
-> **Status: ✅ implemented.** 111 tests across 9 suites (RFC 4226 Appendix D
+> **Status: ✅ implemented and merged to master** (PR #11, ships as
+> `authenticator-clui@1.4.2`). 111 tests across 9 suites (RFC 4226 Appendix D
 > HOTP vectors, RFC 6238 SHA-1/SHA-256/SHA-512 vectors, Google-enum
 > normalization, all three competitor parsers incl. real encrypted Aegis/2FAS
 > fixtures, HOTP counter persistence). Verified end to end via CLI:

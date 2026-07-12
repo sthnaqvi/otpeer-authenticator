@@ -157,16 +157,57 @@ describe('AccountsStore mutations', () => {
         expect(await store.get('pw')).toHaveLength(2);
     });
 
-    test('remove deletes exactly the matched account', async () => {
+    test('remove tombstones the matched account (secrets stripped, still syncs)', async () => {
         const { store } = makeStore();
         await store.add({ name: 'keep', secret: SECRET }, '');
         await store.add({ name: 'drop', secret: SECRET }, '');
         const removed = await store.remove('drop', '');
         expect(removed.name).toBe('drop');
-        const left = await store.get('');
-        expect(left).toHaveLength(1);
-        expect(left[0].name).toBe('keep');
+
+        const active = await store.getActive('');
+        expect(active).toHaveLength(1);
+        expect(active[0].name).toBe('keep');
+
+        const raw = await store.get('');
+        expect(raw).toHaveLength(2); // tombstone retained for sync
+        const tomb = raw.find((a) => a.name === 'drop')!;
+        expect(tomb.deletedAt).toBeTruthy();
+        expect(tomb.secret).toBeUndefined();
+        expect(tomb.totpSecret).toBeUndefined();
+
+        // tombstoned accounts can't be matched/generated against
+        await expect(store.remove('drop', '')).rejects.toThrow(/no account/i);
+        await expect(store.generateCodeFor('drop', '')).rejects.toThrow(/no account/i);
+        // list excludes tombstones
+        expect(await store.list('')).toHaveLength(1);
         await expect(store.remove('ghost', '')).rejects.toThrow(/no account/i);
+    });
+
+    test('re-importing a deleted account resurrects it', async () => {
+        const { store } = makeStore();
+        await store.add({ name: 'me', issuer: 'GitHub', secret: SECRET }, '');
+        await store.remove('GitHub(me)', '');
+        const result = await store.merge(
+            [{ name: 'me', issuer: 'GitHub', secret: '', totpSecret: SECRET }] as never,
+            ''
+        );
+        expect(result.added).toBe(1);
+        const [account] = await store.getActive('');
+        expect(account.name).toBe('me');
+        expect(account.deletedAt).toBeUndefined();
+        expect(account.totpSecret).toBe(SECRET);
+    });
+
+    test('old tombstones are GC-d on write', async () => {
+        const { storage, store } = makeStore();
+        await store.add({ name: 'fresh', secret: SECRET }, '');
+        const accounts = await store.get('');
+        const ancient = new Date(Date.now() - 200 * 24 * 3600 * 1000).toISOString();
+        accounts.push({ id: 'old-tomb', name: 'gone', updatedAt: ancient, deletedAt: ancient } as never);
+        await store.applySyncedAccounts(accounts, '');
+        const after = JSON.parse(JSON.parse(storage.data!).accounts);
+        expect(after.find((a: { id: string }) => a.id === 'old-tomb')).toBeUndefined();
+        expect(after.find((a: { name: string }) => a.name === 'fresh')).toBeTruthy();
     });
 
     test('ambiguous matcher throws with candidates; issuer(name) and id prefix disambiguate', async () => {

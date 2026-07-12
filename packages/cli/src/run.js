@@ -21,7 +21,7 @@ const formatCode = (code) => ui.bold(String(code ?? ''));
  * @param {String} password
  */
 async function run(password) {
-    const accounts = await core.accounts.get(password);
+    const accounts = await core.accounts.getActive(password);
     if (!accounts || !accounts.length) {
         throw new Error('No account found');
     }

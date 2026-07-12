@@ -7,34 +7,9 @@ const CTRL_D = String.fromCharCode(4);
 const BACKSPACE = 8;
 const DEL = 127; // what the delete key actually sends on macOS/Linux
 
-/**
- * Non-TTY stdin (piped/scripted input) is read through ONE shared readline
- * interface that dispenses lines to prompts in order. Creating a fresh
- * interface per prompt would discard whatever the first one had buffered —
- * multi-prompt flows (vault password, then backup password twice) would
- * silently lose every line after the first.
- */
-let sharedLineReader = null;
-const bufferedLines = [];
-const lineWaiters = [];
-function readLineFromPipe(input) {
-    if (!sharedLineReader) {
-        sharedLineReader = readline.createInterface({ input });
-        sharedLineReader.on('line', (line) => {
-            const waiter = lineWaiters.shift();
-            if (waiter) waiter(line);
-            else bufferedLines.push(line);
-        });
-        sharedLineReader.on('close', () => {
-            // stdin ended: unblock any waiting prompt with empty input
-            while (lineWaiters.length) lineWaiters.shift()('');
-        });
-    }
-    return new Promise((resolve) => {
-        if (bufferedLines.length) resolve(bufferedLines.shift());
-        else lineWaiters.push(resolve);
-    });
-}
+// Shared with prompt.js so masked and plain prompts draw from the SAME
+// line queue on piped stdin — see src/stdin-lines.js for why.
+const { readLineFromPipe } = require('./stdin-lines');
 
 class PasswordPrompt {
     constructor(opts) {

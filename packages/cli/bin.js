@@ -56,6 +56,7 @@ Docs: https://github.com/sthnaqvi/authenticator-clui#readme`)
     .option('--paper', '(use with -e) Render the encrypted backup as a printable HTML sheet with QR codes, e.g. auth -e sheet.html --paper')
     .option('--qr <name>', 'Show an account as a QR code to scan into a phone app')
     .option('--info', 'Show vault location, format version, encryption status and account count')
+    .option('-s, --sync [target]', 'Sync with another device on your network. No target: host a session (shows a QR + code). With target: join one (authsync:// URI or host:port)')
     .option('-d, --delete', 'Delete imported accounts !!!Can\'t restore')
     .option('-f, --force', '(use with -d or -i -m) Skip the password check when deleting / overwrite conflicting secrets when merging')
     .option('-r, --run', 'Run authenticator with imported accounts')
@@ -223,6 +224,56 @@ const handleExport = async (options, password) => {
     ui.ok(`Encrypted backup written to ${path.resolve(file)}`);
 };
 
+const handleSync = async (options) => {
+    // A first device may have no vault yet — joining a sync IS its setup path
+    let password = "";
+    const vaultExists = await core.accounts.isValidBackupFile();
+    if (vaultExists) {
+        if (await core.accounts.isEncrypted()) password = await passwordPrompt.start();
+        if (!(await core.accounts.isValid(password))) return fail("Invalid password. Please try again.");
+    } else if (options.encrypt) {
+        console.log('New vault will be created from this sync — choose its password.');
+        password = await passwordPrompt.start();
+    }
+    const localAccounts = vaultExists ? await core.accounts.get(password) : [];
+
+    const describe = (s) =>
+        `${s.added} to add, ${s.updated} to update, ${s.deleted} to delete, ${s.unchanged} unchanged`;
+    const callbacks = {
+        onReady: ({ uri, code }) => {
+            const { toTerminal } = require('./src/qr');
+            console.log(`\nOn the other device, run:  ${ui.bold(`auth --sync "${uri}"`)}`);
+            console.log(`or scan this QR with the mobile app:\n`);
+            console.log(toTerminal(uri));
+            console.log(`\nPairing code (if typing manually): ${ui.bold(code)}`);
+            console.log(ui.dim('Waiting for the other device… (Ctrl+C to cancel)\n'));
+        },
+        confirm: async (summary) => {
+            console.log(`\nMerge result for this device: ${ui.bold(describe(summary))}`);
+            const answer = await question('Apply these changes? [y/N] ');
+            return /^y(es)?$/i.test(answer);
+        },
+    };
+
+    let outcome;
+    if (typeof options.sync === 'string') {
+        const target = core.parseSyncTarget(options.sync);
+        if (!target.code) {
+            target.code = (await question('Pairing code shown on the host: ')).toUpperCase().replace(/\s+/g, '');
+            if (!target.code) return fail('A pairing code is required to join a sync session');
+        }
+        outcome = await core.joinSync(target, localAccounts, callbacks);
+    } else {
+        outcome = await core.hostSync(localAccounts, callbacks);
+    }
+
+    if (!outcome.applied) {
+        return fail('Sync declined (one of the devices said no) — nothing was changed on either side');
+    }
+    await core.accounts.applySyncedAccounts(outcome.accounts, password);
+    ui.ok(`Vault synced: ${describe(outcome.summary)}`);
+};
+
 const handleInfo = async (options) => {
     let password;
     if (await core.accounts.isValidBackupFile() && await core.accounts.isEncrypted()) {
@@ -244,6 +295,7 @@ const processOpts = async (options) => {
         // ---- operations that may create or extend the vault ----
         if (options.import) return handleImport(options);
         if (options.add !== undefined) return handleAdd(options);
+        if (options.sync !== undefined) return handleSync(options);
         if (options.info) return handleInfo(options);
 
         // ---- everything below needs an existing, valid vault ----

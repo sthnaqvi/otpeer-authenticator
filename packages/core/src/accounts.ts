@@ -44,6 +44,13 @@ export interface VaultInfo {
  */
 export const VAULT_VERSION = 2;
 
+/** Tombstones older than this are purged on write (sync GC). */
+const TOMBSTONE_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
+
+/** Deleted accounts stay as tombstones so deletions propagate over sync. */
+export const isTombstone = (account: OtpAccount): boolean => !!account.deletedAt;
+const activeOnly = (accounts: OtpAccount[]): OtpAccount[] => accounts.filter((a) => !isTombstone(a));
+
 interface VaultFile {
     version?: number; // absent on v1 files
     is_encrypted: boolean;
@@ -107,6 +114,9 @@ export class AccountsStore {
     }
 
     private async writeVault(accounts: OtpAccount[], password: string): Promise<void> {
+        // GC: drop tombstones old enough that every peer has long since synced
+        const cutoff = Date.now() - TOMBSTONE_RETENTION_MS;
+        accounts = accounts.filter((a) => !a.deletedAt || Date.parse(String(a.deletedAt)) > cutoff);
         const accountsJson = JSON.stringify(accounts);
         const vault: VaultFile = {
             version: VAULT_VERSION,
@@ -195,7 +205,7 @@ export class AccountsStore {
      */
     private matchOne(accounts: OtpAccount[], matcher: string): OtpAccount {
         const display = (a: OtpAccount) => (a.issuer ? `${a.issuer}(${a.name})` : a.name);
-        let matches = accounts.filter(
+        let matches = activeOnly(accounts).filter(
             (a) => a.name === matcher || display(a) === matcher || (a.id && a.id.startsWith(matcher))
         );
         if (matches.length > 1) {
@@ -267,12 +277,23 @@ export class AccountsStore {
         return account;
     }
 
-    /** Remove a single account by name / issuer(name) / id prefix. */
+    /**
+     * Remove a single account by name / issuer(name) / id prefix. The entry
+     * becomes a tombstone (secrets stripped, deletedAt set) rather than
+     * vanishing, so the deletion propagates to other devices over sync;
+     * tombstones are GC'd on write after the retention window.
+     */
     async remove(matcher: string, password: string): Promise<OtpAccount> {
         const accounts = await this.get(password);
         const target = this.matchOne(accounts, matcher);
-        await this.writeVault(accounts.filter((a) => a !== target), password);
-        return target;
+        const removed = { ...target };
+        const now = new Date().toISOString();
+        target.deletedAt = now;
+        target.updatedAt = now;
+        delete (target as Record<string, unknown>).secret;
+        delete (target as Record<string, unknown>).totpSecret;
+        await this.writeVault(accounts, password);
+        return removed;
     }
 
     /** Rename a single account; bumps updatedAt for future sync merges. */
@@ -287,10 +308,15 @@ export class AccountsStore {
         return target;
     }
 
-    /** Accounts without any secret material — safe to print or serialize. */
+    /** Active (non-deleted) accounts without secret material — safe to print. */
     async list(password: string): Promise<Array<Omit<OtpAccount, 'secret' | 'totpSecret'>>> {
         const accounts = await this.get(password);
-        return accounts.map(({ secret, totpSecret, ...rest }) => rest);
+        return activeOnly(accounts).map(({ secret, totpSecret, ...rest }) => rest);
+    }
+
+    /** Active accounts with full data — what --run displays. */
+    async getActive(password: string): Promise<OtpAccount[]> {
+        return activeOnly(await this.get(password));
     }
 
     /**
@@ -309,12 +335,20 @@ export class AccountsStore {
         const now = new Date().toISOString();
 
         for (const candidate of imported) {
+            if (isTombstone(candidate)) continue; // imports carry accounts, not deletions
             const existing = byKey.get(this.mergeKey(candidate));
             if (!existing) {
                 candidate.id = candidate.id ?? this.crypto.randomId();
                 candidate.updatedAt = candidate.updatedAt ?? now;
                 accounts.push(candidate);
                 byKey.set(this.mergeKey(candidate), candidate);
+                result.added++;
+            } else if (isTombstone(existing)) {
+                // re-importing a deleted account resurrects it
+                existing.secret = candidate.secret;
+                existing.totpSecret = candidate.totpSecret;
+                delete existing.deletedAt;
+                existing.updatedAt = now;
                 result.added++;
             } else if (existing.totpSecret === candidate.totpSecret) {
                 result.skipped++;
@@ -429,12 +463,20 @@ export class AccountsStore {
         };
         if (!vault.is_encrypted || password !== undefined) {
             try {
-                info.count = this.decodeAccounts(vault, password ?? '').length;
+                info.count = activeOnly(this.decodeAccounts(vault, password ?? '')).length;
             } catch (error) {
                 // wrong password — leave count undefined
             }
         }
         return info;
+    }
+
+    /**
+     * Persist the outcome of a sync merge. Accounts arrive fully formed
+     * (ids, timestamps, tombstones) from syncMerge — no backfill wanted.
+     */
+    async applySyncedAccounts(accounts: OtpAccount[], password: string): Promise<void> {
+        await this.writeVault(accounts, password);
     }
 }
 
