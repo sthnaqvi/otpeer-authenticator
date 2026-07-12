@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sthnaqvi/authenticator-clui.git"
+    "url": "git+https://github.com/sthnaqvi/otpeer-authenticator.git"
   },
   "author": "Sayed Tauseef Naqvi",
   "license": "MIT"

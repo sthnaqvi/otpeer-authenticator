@@ -1,4 +1,4 @@
-# Stage E — React Native mobile app (iOS/Android)
+# Stage E — React Native mobile app: "OTPeer Authenticator" (iOS/Android)
 
 ## Goal
 
@@ -6,6 +6,31 @@ UI over `@authenticator/core`, using mobile-specific `StorageAdapter` and
 `CryptoProvider` implementations. No Bluetooth, no discovery — sync joins
 by dialing the address scanned from the host's pairing QR (see Stage C's
 permissions budget).
+
+## Branding & store listings (per Stage C2's ASO plan)
+
+- **Title (both stores): `OTPeer Authenticator`** (20 of 30 chars) — the
+  title is the heaviest-weighted store-search field, and the brand half
+  itself contains the searched keyword (OTP, with Play prefix matching).
+- Apple subtitle: `2FA codes · offline P2P sync`; Apple hidden keyword
+  field: `totp,otp,two factor,2fa,backup,offline,no account,sync`.
+- Play short description: two-factor authentication, TOTP, offline, no
+  account, sync without cloud.
+- Long-tail keywords to own (where a new app can actually rank):
+  "authenticator offline", "2fa no account", "authenticator sync without
+  cloud", "authenticator with desktop app", "authenticator import backup".
+- **F-Droid listing** alongside Play (the proven organic channel for
+  open-source authenticators) — the build must stay reproducible/FOSS-clean
+  for acceptance: no proprietary SDKs, which the no-telemetry stance
+  already guarantees.
+- Tone rule from Stage C2 applies to the listing text: describe our own
+  properties only; other apps appear solely as factual import-format
+  compatibility.
+- Bundle/application id: `app.otpeer.mobile` (iOS) / `app.otpeer.android`.
+- Store screenshots = three uniquely ours moments: live
+  terminal + phone side by side, the QR pairing moment, the paper backup
+  sheet. Reserve the app name in both consoles as soon as developer
+  accounts exist (see C2 owner checklist).
 
 ## Platform adapters needed
 

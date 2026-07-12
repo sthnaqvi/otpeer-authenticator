@@ -1,14 +1,17 @@
 # Stage G — Browser extension (outline)
 
 > Future stage, strictly **after Stage D** (it needs the desktop app as its
-> local backend). Recorded now because the July 2026 competitor research
-> identified it as 2FAS's stand-out feature and a natural fit here.
+> local backend). Recorded now because the July 2026 market research
+> identified browser autofill as a high-value capability users actively
+> seek, and a natural fit here.
 
 ## Concept
 
 A browser extension (Chrome/Firefox) that fills the current TOTP code for
 the site you're on, by asking the **desktop app** — never by holding
-secrets itself.
+secrets itself. Listed as **"OTPeer Authenticator"** in the extension
+stores (per Stage C2 — extension-store search weights names the same way
+app stores do).
 
 - **Transport: native messaging host**, not a network port. The browser
   launches/talks to a registered helper binary over stdio — no listener, no
@@ -26,8 +29,8 @@ secrets itself.
 
 ## Prior art
 
-2FAS Browser Extension (pairs with the phone app; ours pairs with the
-desktop app instead — no push infrastructure needed, which keeps the
-no-backend promise).
+Existing authenticator browser extensions pair with a phone app over push
+infrastructure; ours pairs with the local desktop app instead — no push
+service needed, which keeps the no-backend promise.
 
 Detailed design happens when Stage D is done and its IPC surface is known.

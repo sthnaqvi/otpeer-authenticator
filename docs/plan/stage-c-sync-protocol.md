@@ -1,6 +1,7 @@
 # Stage C — Local sync protocol v1
 
-> **Status: ✅ implemented (CLI surface).** SYNC/1 shipped as specified:
+> **Status: ✅ implemented and merged to master** (PR #12, ships as
+> `authenticator-clui@1.5.0`). SYNC/1 shipped as specified:
 > 26-char (130-bit) pairing codes, HKDF-SHA256 session keys (RFC 5869
 > vectors tested), AES-256-GCM length-prefixed frames (tamper/oversize/
 > wrong-code abort tests), symmetric LWW merge with deterministic tie-breaks
@@ -24,22 +25,15 @@ over a LAN before any Electron/RN UI is built on top of it.
 
 ## Why this is the product's differentiator (market research, July 2026)
 
-Every mainstream authenticator has a structural gap this stage exploits:
-
-- **Google Authenticator** — cloud sync is *not* end-to-end encrypted
-  (Google holds the keys); historically weak export.
-- **Authy** — closed source; 2024 Twilio breach exposed 33M account phone
-  numbers; desktop app discontinued in 2024; notorious export lock-in.
-- **Aegis** — excellent local-first Android app, but Android-only and no
-  device sync at all.
-- **Ente Auth** — E2EE sync done right, but requires an account and their
-  (or a self-hosted) server.
-- **2FAS** — mobile-only; backups go to your own iCloud/Google Drive.
-
-Nobody ships **CLI + desktop + mobile with serverless, account-less,
-local-only P2P sync**. That is this project's lane, and this stage builds
-its core. (Sources: ente.com/compare, stateofsurveillance.org 2FA guide,
-pwdfortress.com 2026 authenticator roundup.)
+A survey of the authenticator landscape (July 2026) found that existing
+apps cluster into three models: vendor-cloud sync tied to an account,
+single-platform local-only vaults with no sync, and self-hosted-server
+sync. To our knowledge, no app spans **CLI + desktop + mobile with
+serverless, account-less, local-only P2P sync** — codes that never touch
+any server, synced directly between a user's own devices. That is this
+project's lane, and this stage builds its core. (We describe our own
+properties and let users compare — this project doesn't name or criticize
+other apps, many of which are excellent volunteer-run open source work.)
 
 ## Permissions budget — the hard constraint
 

@@ -1,13 +1,22 @@
-# authenticator-clui
+# OTPeer
 
 [![npm version](https://img.shields.io/npm/v/authenticator-clui.svg)](https://www.npmjs.com/package/authenticator-clui)
 [![License: MIT](https://img.shields.io/npm/l/authenticator-clui.svg)](LICENSE)
 ![Downloads Monthly](https://img.shields.io/npm/dm/authenticator-clui.svg)
 
-An open source TOTP authenticator you fully own: import your two-factor
-accounts once from Google/Microsoft/Facebook Authenticator, keep them in an
-encrypted local vault, and read live codes from your terminal. No cloud, no
-telemetry — your secrets never leave your machine.
+**OTPeer** is an open source two-factor authenticator you fully own: your
+codes live in an encrypted local vault and sync **peer-to-peer between your
+own devices** — no cloud, no account, no telemetry. Import once from
+Google/Microsoft/Facebook Authenticator (or Aegis, 2FAS, andOTP) and read
+live codes from your terminal today; desktop and mobile apps are on the
+[roadmap](#roadmap).
+
+The CLI ships on npm as
+[`authenticator-clui`](https://www.npmjs.com/package/authenticator-clui)
+(its original name, kept for its install base); the product family, and the
+future desktop/mobile apps ("OTPeer Authenticator" in the stores), carry
+the OTPeer brand — see the
+[branding decision](docs/plan/stage-c2-rebranding.md).
 
 **👉 If you just want to use the CLI, see the
 [package README](packages/cli/README.md) or the
@@ -54,7 +63,7 @@ This is an npm-workspaces monorepo. The root is private and never published
 — only individual packages ship to users, each through its own channel.
 
 ```
-authenticator-clui/
+otpeer-authenticator/
 ├── package.json            workspace root (private — publishes nothing)
 ├── packages/
 │   ├── core/                @authenticator/core — shared engine (TypeScript)
@@ -118,8 +127,8 @@ published as its own package.
 Requirements: Node.js ≥ 14, npm ≥ 7 (for workspaces support).
 
 ```bash
-git clone https://github.com/sthnaqvi/authenticator-clui.git
-cd authenticator-clui
+git clone https://github.com/sthnaqvi/otpeer-authenticator.git
+cd otpeer-authenticator
 npm install        # installs all workspace deps, links core into cli
 npm run build      # compiles core (tsc) + vendors it into packages/cli
 ```
@@ -189,8 +198,9 @@ Development is staged; each stage has an in-depth design doc in
 | B ✅ | CLI: single-account CRUD, code/copy/qr/export, otplib removal | [doc](docs/plan/stage-b-cli-account-management.md) |
 | B2 ✅ | Full OTP compatibility (8-digit/60s/SHA-256/HOTP/Steam), Aegis/2FAS/andOTP imports, paper backup | [doc](docs/plan/stage-b2-otp-compat-and-imports.md) |
 | C ✅ | P2P sync v1: QR-paired local sync, minimal permissions, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
-| D | Electron desktop app (macOS/Ubuntu) | [doc](docs/plan/stage-d-desktop-electron.md) |
-| E | React Native mobile app (iOS/Android) | [doc](docs/plan/stage-e-mobile-react-native.md) |
+| C2 ✅ | Rebranding: OTPeer product family, ASO/store naming, marketing plan | [doc](docs/plan/stage-c2-rebranding.md) |
+| D | Desktop app "OTPeer Authenticator" (Electron, macOS/Ubuntu) | [doc](docs/plan/stage-d-desktop-electron.md) |
+| E | Mobile app "OTPeer Authenticator" (React Native, iOS/Android) | [doc](docs/plan/stage-e-mobile-react-native.md) |
 | F | CI, packaging, store submissions | [doc](docs/plan/stage-f-distribution.md) |
 | G | Browser extension (desktop-app native messaging) | [doc](docs/plan/stage-g-browser-extension.md) |
 
@@ -231,7 +241,7 @@ Contributions are welcome — bug reports, fixes, and stage work alike.
   `files` whitelist; if you add a runtime file, add it there deliberately.
 
 **Reporting issues:**
-[github.com/sthnaqvi/authenticator-clui/issues](https://github.com/sthnaqvi/authenticator-clui/issues)
+[github.com/sthnaqvi/otpeer-authenticator/issues](https://github.com/sthnaqvi/otpeer-authenticator/issues)
 
 ## Security
 
