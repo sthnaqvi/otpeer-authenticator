@@ -1,5 +1,19 @@
 # Stage C — Local sync protocol v1
 
+> **Status: ✅ implemented (CLI surface).** SYNC/1 shipped as specified:
+> 26-char (130-bit) pairing codes, HKDF-SHA256 session keys (RFC 5869
+> vectors tested), AES-256-GCM length-prefixed frames (tamper/oversize/
+> wrong-code abort tests), symmetric LWW merge with deterministic tie-breaks
+> and cross-device dedupe, tombstoned deletes with 90-day GC, one-shot
+> listener, mutual confirmation before any write. `remove()` became
+> tombstone-based so deletions propagate. 131 tests across 10 suites.
+> Verified with real two-process CLI runs over localhost: converging vaults,
+> delete propagation, a blank device bootstrapping entirely from a sync, and
+> wrong-code aborts on both ends. Desktop/mobile UIs (Stages D/E) wrap these
+> same core APIs; mDNS discovery remains an optional future convenience —
+> QR/URI pairing needed no discovery at all, exactly as the permissions
+> budget intended.
+
 ## Goal
 
 Sync vaults across devices with **no backend**, over the local network,

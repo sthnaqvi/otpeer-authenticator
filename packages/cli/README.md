@@ -75,6 +75,7 @@ auth [options]
 | `--export [file]` | `-e` | Write an encrypted backup. Default location is your **home directory** (`~/authenticator-backup.json`), never the current folder — so a backup can't silently land inside a project/repo. An explicit path inside a git repository triggers a warning. You choose a backup password (asked twice); restore anywhere with `--import <file>`. |
 | `--paper` | | With `--export`: write a printable HTML sheet (QR codes + text) instead — offline paper recovery. Useless to anyone without the backup password. |
 | `--info` | | Show vault location, format version, encryption status, and account count. |
+| `--sync [target]` | `-s` | Sync with another device on your local network — no cloud, no account. Without a target: host a session (shows an `authsync://` URI, a QR, and a one-time pairing code). With a target: join one. Both devices see the merge summary and must confirm before anything is written. Deletions sync too. |
 | `--encrypt` | `-en` | With `--import`/`--add` into a *new* vault: protect it with AES-256 encryption. You'll enter the password on every use. |
 | `--run` | `-r` | Show live codes for all accounts in a table that refreshes every second. Asks for your password if the vault is encrypted. |
 | `--delete` | `-d` | Delete **all** imported accounts. Cannot be undone. Requires the password for an encrypted vault (unless `--force`). |
@@ -99,6 +100,8 @@ auth -e recovery-sheet.html --paper                    # printable paper backup
 auth -i vault-backup.json -m                           # restore/merge a backup
 auth -i aegis-export.json -m                           # switch from Aegis (or 2FAS/andOTP)
 auth --qr GitHub                                       # move an account to a phone app
+auth -s                                                # host a sync session (QR + code)
+auth -s "authsync://192.168.1.7:52514#ABC..."          # join a sync from another device
 auth -d -f                                             # force-delete everything
 ```
 

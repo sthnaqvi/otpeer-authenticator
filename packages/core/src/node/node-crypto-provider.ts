@@ -106,6 +106,16 @@ export class NodeCryptoProvider implements CryptoProvider {
         return Buffer.concat([decipher.update(Buffer.from(ciphertext)), decipher.final()]);
     }
 
+    aesGcmEncrypt(key: Uint8Array, iv: Uint8Array, plaintext: Uint8Array): { ciphertext: Uint8Array; authTag: Uint8Array } {
+        const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key), Buffer.from(iv));
+        const ciphertext = Buffer.concat([cipher.update(Buffer.from(plaintext)), cipher.final()]);
+        return { ciphertext, authTag: cipher.getAuthTag() };
+    }
+
+    randomBytes(length: number): Uint8Array {
+        return crypto.randomBytes(length);
+    }
+
     randomId(): string {
         // UUID v4 from randomBytes — crypto.randomUUID needs Node >=14.17,
         // engines only promise >=14.0

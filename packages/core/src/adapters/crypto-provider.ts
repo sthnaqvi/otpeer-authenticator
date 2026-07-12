@@ -36,4 +36,8 @@ export interface CryptoProvider {
     pbkdf2Sha256(password: string, salt: Uint8Array, iterations: number, keyLength: number): Uint8Array;
     /** Raw AES-256-GCM open with explicit key/iv/tag. Throws on auth failure. */
     aesGcmDecrypt(key: Uint8Array, iv: Uint8Array, ciphertext: Uint8Array, authTag: Uint8Array): Uint8Array;
+    /** Raw AES-256-GCM seal with an explicit key/iv (sync transport frames). */
+    aesGcmEncrypt(key: Uint8Array, iv: Uint8Array, plaintext: Uint8Array): { ciphertext: Uint8Array; authTag: Uint8Array };
+    /** Cryptographically secure random bytes (pairing codes, frame IVs). */
+    randomBytes(length: number): Uint8Array;
 }
