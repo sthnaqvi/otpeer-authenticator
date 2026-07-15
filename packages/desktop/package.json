@@ -77,7 +77,8 @@
       "target": ["dmg"],
       "category": "public.app-category.utilities",
       "artifactName": "OTPeer-Authenticator-${version}-${arch}.${ext}",
-      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
       "extendInfo": {
         "NSCameraUsageDescription": "OTPeer Authenticator uses the camera to scan sync or account setup QR codes.",
         "NSScreenCaptureDescription": "OTPeer Authenticator can scan a QR code shown on this screen."
