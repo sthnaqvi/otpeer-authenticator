@@ -20,7 +20,7 @@ authenticator-clui/
   package.json                 (root, npm workspaces config)
   packages/
     core/
-      package.json              name: "@authenticator/core"
+      package.json              private workspace package under packages/core
       src/
         index.ts                 public exports
         accounts.ts               vault load/save, orchestrates storage+crypto
@@ -37,7 +37,7 @@ authenticator-clui/
       package.json deps: protobufjs, fs-extra (only used by node/ adapter)
     cli/
       package.json               name: "authenticator-clui" (keeps existing published name + bin entries)
-      bin.js                      unchanged CLI surface, now requires("@authenticator/core")
+      bin.js                      unchanged CLI surface; loads core via vendor/core (see below)
       src/
         PasswordPrompt.js          stays CLI-specific (terminal I/O)
         log.js                     stays CLI-specific (console.clear + cli-table rendering)
@@ -107,27 +107,24 @@ No new flags, no new files created anywhere except the (identical-content)
 vault file at its *current* location — location changes are explicitly
 deferred to A2 so this stage has nothing to migrate and nothing to break.
 
-## Publishing: core must be vendored, not left as a real dependency
+## Publishing: packages/core must be vendored, not left as a registry dependency
 
-Missed on the first pass, worth recording: `@authenticator/core` is
-`private: true` and never published to npm — it only resolves locally via
-the workspace symlink. If `packages/cli/package.json` lists it as a normal
-`"@authenticator/core": "^0.1.0"` dependency, `npm publish` still packs fine
-(publishing only looks at the package's own files), but the published
-tarball is silently broken: anyone running `npm install -g authenticator-clui`
-gets a `require('@authenticator/core')` that can't resolve to anything on
-the registry.
+Missed on the first pass, worth recording: `packages/core` is private and
+never published to npm — it only exists in this monorepo. If the CLI listed
+it as a normal npm dependency, `npm publish` would still pack, but the
+published tarball would be broken: anyone running
+`npm install -g authenticator-clui` would get a require that cannot resolve
+on the registry.
 
 Fix: `packages/cli` vendors core's compiled `dist/` into
 `packages/cli/vendor/core` as part of the build (`npm run build` at the
 root runs core's `tsc` build, then `vendor-core` copies the output;
 `prepublishOnly` guarantees this runs before every publish). `bin.js`/`run.js`
 require a small indirection module, `packages/cli/core.js`
-(`module.exports = require('./vendor/core')`), instead of the package name
-directly. `@authenticator/core` is removed from `packages/cli`'s
-`dependencies`; its actual runtime deps (`fs-extra`, `otplib`, `protobufjs`)
-move to `packages/cli/package.json` directly, since core itself is never
-installed as a package for the end user.
+(`module.exports = require('./vendor/core')`), instead of a package name.
+`packages/core` is not listed in the CLI's `dependencies`; its actual
+runtime deps (`fs-extra`, `protobufjs`) move to `packages/cli/package.json`
+directly, since core itself is never installed as a package for the end user.
 
 Verified via `npm pack --dry-run` inside `packages/cli`: the tarball now
 contains `vendor/core/**` and has no dependency on an unresolvable package.

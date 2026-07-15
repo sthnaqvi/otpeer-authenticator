@@ -1,6 +1,6 @@
 {
   "name": "authenticator-clui",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "A simple command-line authenticator with encryption (import accounts from Google Authenticator, Microsoft Authenticator and Facebook Authenticator)",
   "main": "index.js",
   "files": [
@@ -51,10 +51,10 @@
     "auth": "bin.js"
   },
   "dependencies": {
-    "commander": "^8.2.0",
-    "fs-extra": "^10.0.0",
-    "protobufjs": "^8.7.0",
-    "qrcode-generator": "^1.5.2"
+    "commander": "^15.0.0",
+    "fs-extra": "^11.3.6",
+    "protobufjs": "^8.7.1",
+    "qrcode-generator": "^2.0.4"
   },
   "engines": {
     "node": ">=14.0.0"

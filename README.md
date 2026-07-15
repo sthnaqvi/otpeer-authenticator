@@ -32,6 +32,7 @@ contributing.
 - [Repository structure](#repository-structure)
 - [Architecture](#architecture)
 - [Building from source](#building-from-source)
+- [Desktop releases](#desktop-releases)
 - [Running the CLI from a checkout](#running-the-cli-from-a-checkout)
 - [Testing](#testing)
 - [Publishing](#publishing)
@@ -49,8 +50,8 @@ logic:
 | Surface | Status | Distribution |
 |---|---|---|
 | **CLI** (Node.js) | ✅ published | [npm](https://www.npmjs.com/package/authenticator-clui) |
-| **Desktop** (Electron, macOS/Ubuntu) | 🔜 planned | GitHub Releases (`.dmg`/`.deb`) |
-| **Mobile** (React Native, iOS/Android) | 🔜 planned | App Store / Play Store |
+| **Desktop** "OTPeer Authenticator" (Electron, Mac/Ubuntu/Windows) | ✅ app ready; [ship via GitHub Releases](#desktop-releases) | [GitHub Releases](https://github.com/sthnaqvi/otpeer-authenticator/releases) (+ Homebrew/Flathub/winget later) |
+| **Mobile** "OTPeer Authenticator" (React Native, iOS/Android) | 🔜 planned | App Store / Play Store / F-Droid |
 
 Devices will sync **peer-to-peer over the local network, QR-paired — no
 backend server, no account, and no permissions beyond the camera and iOS's
@@ -66,7 +67,7 @@ This is an npm-workspaces monorepo. The root is private and never published
 otpeer-authenticator/
 ├── package.json            workspace root (private — publishes nothing)
 ├── packages/
-│   ├── core/                @authenticator/core — shared engine (TypeScript)
+│   ├── core/                packages/core — shared engine (TypeScript)
 │   │   └── src/
 │   │       ├── accounts.ts           vault load/save orchestration
 │   │       ├── totp.ts                TOTP code generation, window timing
@@ -74,10 +75,15 @@ otpeer-authenticator/
 │   │       ├── importers/              Google Authenticator export decoding
 │   │       ├── adapters/               StorageAdapter / CryptoProvider interfaces
 │   │       └── node/                    Node.js implementations of the adapters
-│   └── cli/                 authenticator-clui — the published npm package
-│       ├── bin.js                    command-line entry (`authenticator`, `auth`)
-│       ├── core.js                    wires the vendored core to CLI storage paths
-│       ├── src/                       terminal-only code (password prompt, table render)
+│   ├── cli/                 authenticator-clui — the published npm package
+│   │   ├── bin.js                    command-line entry (`authenticator`, `auth`)
+│   │   ├── core.js                    wires the vendored core to CLI storage paths
+│   │   ├── src/                       terminal-only code (password prompt, table render)
+│   │   └── vendor/core/               build-generated copy of core (gitignored)
+│   └── desktop/             "OTPeer Authenticator" — Electron + React app
+│       ├── electron/                 main (fixed window + tray), preload, vault-service
+│       ├── build/                     OTPeer app / tray icons (icns, ico, png)
+│       ├── src/renderer/              React UI (hamburger IA, accounts, sync)
 │       └── vendor/core/               build-generated copy of core (gitignored)
 ├── docs/plan/               in-depth design docs, one per roadmap stage
 └── readme_assets/           images used by the READMEs
@@ -85,7 +91,7 @@ otpeer-authenticator/
 
 ## Architecture
 
-The design rule that everything else follows from: **`@authenticator/core`
+The design rule that everything else follows from: **`packages/core`
 contains all logic that must behave identically on every platform, and it
 never touches a platform API directly.** It talks to the outside world only
 through two injected interfaces:
@@ -115,12 +121,13 @@ This is why React Native support is feasible without rewriting the engine:
 RN can't run Node's `fs`/`crypto`, but it can implement these two
 interfaces.
 
-**Why core is vendored, not a published dependency:** `@authenticator/core`
-is `private: true` and exists only inside this repo. The CLI's build step
-copies core's compiled output into `packages/cli/vendor/core`, so the
-published npm tarball is fully self-contained. This keeps core's API free
-to change rapidly during early development. Once it stabilizes, it may be
-published as its own package.
+**Why core is vendored, not a published dependency:** `packages/core` is
+`private: true` and exists only inside this repo (its npm workspace name is
+still required by npm, but clients load a vendored copy, not that import path).
+The CLI's build step copies core's compiled output into
+`packages/cli/vendor/core`, so the published npm tarball is fully
+self-contained. This keeps core's API free to change rapidly during early
+development. Once it stabilizes, it may be published as its own package.
 
 ## Building from source
 
@@ -139,6 +146,31 @@ npm run build      # compiles core (tsc) + vendors it into packages/cli
 2. `packages/cli`: copies `core/dist` → `packages/cli/vendor/core`
 
 Both output directories are gitignored; they're always regenerated.
+
+## Desktop releases
+
+Installers for **OTPeer Authenticator** are published on
+[GitHub Releases](https://github.com/sthnaqvi/otpeer-authenticator/releases)
+(tags named `desktop-v*`, e.g. `desktop-v0.1.0`).
+
+| Platform | Artifact |
+|---|---|
+| macOS | `.dmg` (`arm64` = Apple Silicon, `x64` = Intel) |
+| Windows | NSIS `.exe` |
+| Linux | `.AppImage` and `.deb` |
+
+**macOS Gatekeeper:** Phase 1 builds are unsigned. First launch may need
+right-click → Open, or allow under System Settings → Privacy & Security.
+Notarization is planned later.
+
+**Maintainers — cut a release:**
+
+1. Merge desktop work to `master`.
+2. Confirm `packages/desktop/package.json` `version` (e.g. `0.1.0`).
+3. Tag and push: `git tag desktop-v0.1.0 && git push origin desktop-v0.1.0`
+4. Wait for the **Desktop release** workflow; assets appear on the Releases page.
+
+Local Mac-only packaging: `cd packages/desktop && npm run dist`.
 
 ## Running the CLI from a checkout
 
@@ -199,7 +231,7 @@ Development is staged; each stage has an in-depth design doc in
 | B2 ✅ | Full OTP compatibility (8-digit/60s/SHA-256/HOTP/Steam), Aegis/2FAS/andOTP imports, paper backup | [doc](docs/plan/stage-b2-otp-compat-and-imports.md) |
 | C ✅ | P2P sync v1: QR-paired local sync, minimal permissions, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
 | C2 ✅ | Rebranding: OTPeer product family, ASO/store naming, marketing plan | [doc](docs/plan/stage-c2-rebranding.md) |
-| D | Desktop app "OTPeer Authenticator" (Electron, macOS/Ubuntu) | [doc](docs/plan/stage-d-desktop-electron.md) |
+| D ✅ | Desktop app "OTPeer Authenticator" (Electron, Mac/Ubuntu/Windows) — [deployment channels](docs/plan/stage-d-deployment-channels.md) | [doc](docs/plan/stage-d-desktop-electron.md) |
 | E | Mobile app "OTPeer Authenticator" (React Native, iOS/Android) | [doc](docs/plan/stage-e-mobile-react-native.md) |
 | F | CI, packaging, store submissions | [doc](docs/plan/stage-f-distribution.md) |
 | G | Browser extension (desktop-app native messaging) | [doc](docs/plan/stage-g-browser-extension.md) |

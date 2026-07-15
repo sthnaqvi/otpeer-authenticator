@@ -1,0 +1,88 @@
+{
+  "name": "@authenticator/desktop",
+  "productName": "OTPeer Authenticator",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OTPeer Authenticator — two-factor codes with serverless peer-to-peer sync. Desktop app.",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "vendor-core": "rm -rf vendor/core && mkdir -p vendor/core && cp -r ../core/dist/. vendor/core/",
+    "build:main": "tsc -p tsconfig.json",
+    "build:renderer": "vite build",
+    "build": "npm run vendor-core && npm run build:main && npm run build:renderer",
+    "start": "npm run build && node scripts/brand_electron_dev.js && OTPEER_DISABLE_UPDATER=1 electron .",
+    "brand:electron": "node scripts/brand_electron_dev.js",
+    "smoke": "npm run vendor-core && npm run build:main && node scripts/smoke.js",
+    "pack": "npm run build && mkdir -p node_modules && electron-builder --dir",
+    "dist": "npm run build && mkdir -p node_modules && electron-builder"
+  },
+  "author": "Sayed Tauseef Naqvi",
+  "license": "MIT",
+  "dependencies": {
+    "electron-updater": "^6.8.9",
+    "fs-extra": "^11.3.6",
+    "jsqr": "^1.4.0",
+    "protobufjs": "^8.7.1",
+    "qrcode-generator": "^2.0.4"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "electron": "43.1.1",
+    "electron-builder": "^26.15.3",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.4"
+  },
+  "build": {
+    "appId": "app.otpeer.desktop",
+    "productName": "OTPeer Authenticator",
+    "copyright": "Copyright © Sayed Tauseef Naqvi",
+    "npmRebuild": false,
+    "files": [
+      "dist-electron/**",
+      "dist-renderer/**",
+      "vendor/**",
+      "build/**"
+    ],
+    "asarUnpack": [
+      "build/tray*.png",
+      "build/trayTemplate*.png",
+      "build/icon.*"
+    ],
+    "extraResources": [],
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "target": "dmg",
+      "category": "public.app-category.utilities",
+      "extendInfo": {
+        "NSCameraUsageDescription": "OTPeer Authenticator uses the camera to scan sync or account setup QR codes.",
+        "NSScreenCaptureDescription": "OTPeer Authenticator can scan a QR code shown on this screen."
+      }
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": "nsis"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "sthnaqvi",
+      "repo": "otpeer-authenticator"
+    }
+  }
+}

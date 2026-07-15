@@ -58,7 +58,8 @@ function makePeer(socket: net.Socket, crypto: CryptoProvider, key: Uint8Array, o
 
     socket.on('data', (chunk) => {
         try {
-            for (const message of reader.feed(chunk)) {
+            const data = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+            for (const message of reader.feed(data)) {
                 const waiter = waiters.shift();
                 if (waiter) waiter(message);
                 else queue.push(message);

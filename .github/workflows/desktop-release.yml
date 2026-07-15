@@ -1,0 +1,147 @@
+# Build OTPeer Authenticator installers and attach them to a GitHub Release.
+# Trigger: push a tag like desktop-v0.1.0 (must match packages/desktop version).
+name: Desktop release
+
+on:
+  push:
+    tags:
+      - 'desktop-v*'
+  # Manual dry-run: builds all platforms, uploads Actions artifacts, no GitHub Release.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: ubuntu-latest
+            platform: linux
+          - os: windows-latest
+            platform: win
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared core
+        run: npm run build --workspace=@authenticator/core
+
+      - name: Verify desktop tag matches package version
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME#desktop-v}"
+          pkg="$(node -p "require('./packages/desktop/package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "Tag desktop-v$tag does not match packages/desktop version $pkg"
+            exit 1
+          fi
+
+      - name: Build desktop installers
+        working-directory: packages/desktop
+        env:
+          # Unsigned Phase 1 — notarization / Authenticode later (Stage F).
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        shell: bash
+        run: |
+          case "${{ matrix.platform }}" in
+            mac)
+              # Apple Silicon + Intel DMGs.
+              npm run build
+              mkdir -p node_modules
+              npx electron-builder --mac --arm64 --x64 --publish never
+              ;;
+            linux)
+              npm run build
+              mkdir -p node_modules
+              npx electron-builder --linux --publish never
+              ;;
+            win)
+              npm run build
+              mkdir -p node_modules
+              npx electron-builder --win --publish never
+              ;;
+          esac
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: |
+            packages/desktop/release/*
+            !packages/desktop/release/mac*/
+            !packages/desktop/release/linux*/
+            !packages/desktop/release/win*/
+            !packages/desktop/release/*.blockmap
+            !packages/desktop/release/builder-*.yml
+            !packages/desktop/release/builder-*.yaml
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    steps:
+      - name: Download all platform artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: desktop-*
+          merge-multiple: true
+
+      - name: List release files
+        run: find dist -type f | sort
+
+      - name: Create or update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: OTPeer Authenticator ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## OTPeer Authenticator (desktop)
+
+            Installers for macOS, Windows, and Linux.
+
+            ### macOS
+            - Download the `.dmg` for your chip (`arm64` = Apple Silicon, `x64` = Intel).
+            - **Unsigned build:** on first open, right-click the app → Open, or allow it under
+              **System Settings → Privacy & Security** (Gatekeeper). Notarization comes later.
+
+            ### Windows
+            - Run the NSIS `.exe` installer.
+            - SmartScreen may warn until the binary builds reputation; choose **More info → Run anyway**.
+
+            ### Linux
+            - **AppImage:** make executable and run, or
+            - **`.deb`:** `sudo dpkg -i` the downloaded package.
+
+            Auto-update checks this GitHub Releases feed when enabled in Settings.
+          files: |
+            dist/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
