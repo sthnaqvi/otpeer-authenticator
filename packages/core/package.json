@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -p . && mkdir -p dist/importers && cp src/importers/google_auth.proto dist/importers/google_auth.proto",
+    "build": "tsc -p . && node scripts/copy_proto.js",
     "test": "jest"
   },
   "dependencies": {

@@ -65,21 +65,17 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         shell: bash
         run: |
+          npm run build
+          node -e "require('fs').mkdirSync('node_modules',{recursive:true})"
           case "${{ matrix.platform }}" in
             mac)
               # Apple Silicon + Intel DMGs.
-              npm run build
-              mkdir -p node_modules
               npx electron-builder --mac --arm64 --x64 --publish never
               ;;
             linux)
-              npm run build
-              mkdir -p node_modules
               npx electron-builder --linux --publish never
               ;;
             win)
-              npm run build
-              mkdir -p node_modules
               npx electron-builder --win --publish never
               ;;
           esac
