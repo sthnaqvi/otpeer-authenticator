@@ -69,14 +69,13 @@ jobs:
           node -e "require('fs').mkdirSync('node_modules',{recursive:true})"
           case "${{ matrix.platform }}" in
             mac)
-              # Apple Silicon + Intel DMGs.
               npx electron-builder --mac --arm64 --x64 --publish never
               ;;
             linux)
-              npx electron-builder --linux --publish never
+              npx electron-builder --linux --x64 --publish never
               ;;
             win)
-              npx electron-builder --win --publish never
+              npx electron-builder --win --x64 --publish never
               ;;
           esac
 
