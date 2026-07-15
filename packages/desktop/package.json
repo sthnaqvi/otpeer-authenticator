@@ -6,15 +6,15 @@
   "description": "OTPeer Authenticator — two-factor codes with serverless peer-to-peer sync. Desktop app.",
   "main": "dist-electron/main.js",
   "scripts": {
-    "vendor-core": "rm -rf vendor/core && mkdir -p vendor/core && cp -r ../core/dist/. vendor/core/",
+    "vendor-core": "node scripts/vendor_core.js",
     "build:main": "tsc -p tsconfig.json",
     "build:renderer": "vite build",
     "build": "npm run vendor-core && npm run build:main && npm run build:renderer",
     "start": "npm run build && node scripts/brand_electron_dev.js && OTPEER_DISABLE_UPDATER=1 electron .",
     "brand:electron": "node scripts/brand_electron_dev.js",
     "smoke": "npm run vendor-core && npm run build:main && node scripts/smoke.js",
-    "pack": "npm run build && mkdir -p node_modules && electron-builder --dir",
-    "dist": "npm run build && mkdir -p node_modules && electron-builder"
+    "pack": "npm run build && node -e \"require('fs').mkdirSync('node_modules',{recursive:true})\" && electron-builder --dir",
+    "dist": "npm run build && node -e \"require('fs').mkdirSync('node_modules',{recursive:true})\" && electron-builder"
   },
   "author": "Sayed Tauseef Naqvi",
   "license": "MIT",
@@ -40,6 +40,7 @@
   "build": {
     "appId": "app.otpeer.desktop",
     "productName": "OTPeer Authenticator",
+    "executableName": "otpeer-authenticator",
     "copyright": "Copyright © Sayed Tauseef Naqvi",
     "npmRebuild": false,
     "files": [
