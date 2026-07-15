@@ -1,6 +1,7 @@
 {
   "name": "otpeer-authenticator",
   "productName": "OTPeer Authenticator",
+  "desktopName": "otpeer-authenticator",
   "version": "0.1.0",
   "private": true,
   "description": "OTPeer Authenticator — two-factor codes with serverless peer-to-peer sync. Desktop app.",
@@ -52,7 +53,6 @@
   "build": {
     "appId": "app.otpeer.desktop",
     "productName": "OTPeer Authenticator",
-    "executableName": "otpeer-authenticator",
     "copyright": "Copyright © Sayed Tauseef Naqvi",
     "npmRebuild": false,
     "artifactName": "OTPeer-Authenticator-${version}-${arch}.${ext}",
@@ -76,6 +76,8 @@
       "icon": "build/icon.icns",
       "target": ["dmg"],
       "category": "public.app-category.utilities",
+      "artifactName": "OTPeer-Authenticator-${version}-${arch}.${ext}",
+      "identity": null,
       "extendInfo": {
         "NSCameraUsageDescription": "OTPeer Authenticator uses the camera to scan sync or account setup QR codes.",
         "NSScreenCaptureDescription": "OTPeer Authenticator can scan a QR code shown on this screen."
@@ -87,6 +89,7 @@
       "category": "Utility",
       "executableName": "otpeer-authenticator",
       "artifactName": "OTPeer-Authenticator-${version}-${arch}.${ext}",
+      "syncDesktopName": true,
       "maintainer": "Sayed Tauseef Naqvi <tauseef.naqvi786@gmail.com>",
       "synopsis": "OTPeer Authenticator - 2FA codes with offline peer-to-peer sync",
       "description": "Two-factor authentication codes from a local vault. Sync peer-to-peer over your network - no cloud account."
