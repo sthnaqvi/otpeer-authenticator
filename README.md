@@ -32,6 +32,7 @@ contributing.
 - [Repository structure](#repository-structure)
 - [Architecture](#architecture)
 - [Building from source](#building-from-source)
+- [Desktop releases](#desktop-releases)
 - [Running the CLI from a checkout](#running-the-cli-from-a-checkout)
 - [Testing](#testing)
 - [Publishing](#publishing)
@@ -49,7 +50,7 @@ logic:
 | Surface | Status | Distribution |
 |---|---|---|
 | **CLI** (Node.js) | ✅ published | [npm](https://www.npmjs.com/package/authenticator-clui) |
-| **Desktop** "OTPeer Authenticator" (Electron, Mac/Ubuntu/Windows) | ✅ built ([channels](docs/plan/stage-d-deployment-channels.md)) | GitHub Releases + Homebrew/Flathub/winget |
+| **Desktop** "OTPeer Authenticator" (Electron, Mac/Ubuntu/Windows) | ✅ app ready; [ship via GitHub Releases](#desktop-releases) | [GitHub Releases](https://github.com/sthnaqvi/otpeer-authenticator/releases) (+ Homebrew/Flathub/winget later) |
 | **Mobile** "OTPeer Authenticator" (React Native, iOS/Android) | 🔜 planned | App Store / Play Store / F-Droid |
 
 Devices will sync **peer-to-peer over the local network, QR-paired — no
@@ -145,6 +146,31 @@ npm run build      # compiles core (tsc) + vendors it into packages/cli
 2. `packages/cli`: copies `core/dist` → `packages/cli/vendor/core`
 
 Both output directories are gitignored; they're always regenerated.
+
+## Desktop releases
+
+Installers for **OTPeer Authenticator** are published on
+[GitHub Releases](https://github.com/sthnaqvi/otpeer-authenticator/releases)
+(tags named `desktop-v*`, e.g. `desktop-v0.1.0`).
+
+| Platform | Artifact |
+|---|---|
+| macOS | `.dmg` (`arm64` = Apple Silicon, `x64` = Intel) |
+| Windows | NSIS `.exe` |
+| Linux | `.AppImage` and `.deb` |
+
+**macOS Gatekeeper:** Phase 1 builds are unsigned. First launch may need
+right-click → Open, or allow under System Settings → Privacy & Security.
+Notarization is planned later.
+
+**Maintainers — cut a release:**
+
+1. Merge desktop work to `master`.
+2. Confirm `packages/desktop/package.json` `version` (e.g. `0.1.0`).
+3. Tag and push: `git tag desktop-v0.1.0 && git push origin desktop-v0.1.0`
+4. Wait for the **Desktop release** workflow; assets appear on the Releases page.
+
+Local Mac-only packaging: `cd packages/desktop && npm run dist`.
 
 ## Running the CLI from a checkout
 
