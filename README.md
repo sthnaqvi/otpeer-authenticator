@@ -159,9 +159,27 @@ Installers for **OTPeer Authenticator** are published on
 | Windows | NSIS `.exe` |
 | Linux | `.AppImage` and `.deb` |
 
-**macOS Gatekeeper:** Phase 1 builds are unsigned. First launch may need
-right-click → Open, or allow under System Settings → Privacy & Security.
-Notarization is planned later.
+### macOS install (unsigned Phase 1 builds)
+
+These `.dmg` builds use `"identity": null` — **not Apple-signed / not notarized**.
+macOS Gatekeeper will often say the app is **“damaged”** after a browser download.
+That is quarantine, not a corrupt file.
+
+1. Open the `.dmg` and drag **OTPeer Authenticator** into **Applications**.
+2. Clear quarantine once in Terminal:
+
+```bash
+xattr -cr "/Applications/OTPeer Authenticator.app"
+open "/Applications/OTPeer Authenticator.app"
+```
+
+If Finder still blocks it: right-click the app → **Open** → **Open**.
+
+**Why no one-click Mac install yet?** Real “download and open” needs an
+[Apple Developer Program](https://developer.apple.com/programs/) membership
+(~$99/year) plus code signing + notarization in CI. That is planned later; until
+then expect the `xattr` step above (same pattern many open-source Electron apps
+use before notarizing).
 
 **Maintainers — cut a release:**
 
