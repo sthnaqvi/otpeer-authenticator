@@ -1,5 +1,5 @@
 {
-  "name": "@authenticator/desktop",
+  "name": "otpeer-authenticator",
   "productName": "OTPeer Authenticator",
   "version": "0.1.0",
   "private": true,
@@ -55,6 +55,7 @@
     "executableName": "otpeer-authenticator",
     "copyright": "Copyright © Sayed Tauseef Naqvi",
     "npmRebuild": false,
+    "artifactName": "OTPeer-Authenticator-${version}-${arch}.${ext}",
     "files": [
       "dist-electron/**",
       "dist-renderer/**",
@@ -73,7 +74,7 @@
     },
     "mac": {
       "icon": "build/icon.icns",
-      "target": "dmg",
+      "target": ["dmg"],
       "category": "public.app-category.utilities",
       "extendInfo": {
         "NSCameraUsageDescription": "OTPeer Authenticator uses the camera to scan sync or account setup QR codes.",
@@ -82,18 +83,27 @@
     },
     "linux": {
       "icon": "build/icon.png",
-      "target": [
-        "AppImage",
-        "deb"
-      ],
+      "target": ["AppImage", "deb"],
       "category": "Utility",
+      "executableName": "otpeer-authenticator",
+      "artifactName": "OTPeer-Authenticator-${version}-${arch}.${ext}",
       "maintainer": "Sayed Tauseef Naqvi <tauseef.naqvi786@gmail.com>",
-      "synopsis": "OTPeer Authenticator — 2FA codes with offline peer-to-peer sync",
-      "description": "Two-factor authentication codes from a local vault. Sync peer-to-peer over your network — no cloud account."
+      "synopsis": "OTPeer Authenticator - 2FA codes with offline peer-to-peer sync",
+      "description": "Two-factor authentication codes from a local vault. Sync peer-to-peer over your network - no cloud account."
+    },
+    "deb": {
+      "packageName": "otpeer-authenticator",
+      "artifactName": "OTPeer-Authenticator-${version}-${arch}.${ext}"
     },
     "win": {
       "icon": "build/icon.ico",
-      "target": "nsis"
+      "target": ["nsis"],
+      "artifactName": "OTPeer-Authenticator-${version}-${arch}-setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "OTPeer-Authenticator-${version}-${arch}-setup.${ext}"
     },
     "publish": {
       "provider": "github",
