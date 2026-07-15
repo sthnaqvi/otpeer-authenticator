@@ -159,27 +159,22 @@ Installers for **OTPeer Authenticator** are published on
 | Windows | NSIS `.exe` |
 | Linux | `.AppImage` and `.deb` |
 
-### macOS install (unsigned Phase 1 builds)
+### macOS install (Phase 1 — no Apple Developer signing yet)
 
-These `.dmg` builds use `"identity": null` — **not Apple-signed / not notarized**.
-macOS Gatekeeper will often say the app is **“damaged”** after a browser download.
-That is quarantine, not a corrupt file.
+| What you see | Why |
+|---|---|
+| **“… is damaged and can’t be opened”** | App has no **Developer ID** signature. On recent macOS, Chrome/Safari downloads of unsigned apps get this dialog (not the older “unidentified developer” one). |
+| **“Apple could not verify…” / unidentified developer** | Requires a paid [Apple Developer Program](https://developer.apple.com/programs/) **Developer ID Application** certificate (~$99/year). |
+| Opens with no warning | Requires Developer ID **plus Apple notarization**. |
 
-1. Open the `.dmg` and drag **OTPeer Authenticator** into **Applications**.
-2. Clear quarantine once in Terminal:
+Unsigned builds cannot produce the “unidentified developer” dialog for browser downloads — Apple closed that path. Until notarization is wired, clear quarantine once after install:
 
 ```bash
 xattr -cr "/Applications/OTPeer Authenticator.app"
 open "/Applications/OTPeer Authenticator.app"
 ```
 
-If Finder still blocks it: right-click the app → **Open** → **Open**.
-
-**Why no one-click Mac install yet?** Real “download and open” needs an
-[Apple Developer Program](https://developer.apple.com/programs/) membership
-(~$99/year) plus code signing + notarization in CI. That is planned later; until
-then expect the `xattr` step above (same pattern many open-source Electron apps
-use before notarizing).
+When you have an Apple Developer account, we can add CI signing + notarization so Mac users get a normal install.
 
 **Maintainers — cut a release:**
 
