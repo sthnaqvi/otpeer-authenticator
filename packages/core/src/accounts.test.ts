@@ -56,6 +56,37 @@ describe('AccountsStore', () => {
         expect(accounts[0].name).toBe('test');
     });
 
+    test('setPassword encrypts a plaintext vault and rejects the old empty password', async () => {
+        const { store } = makeStore();
+        await store.seed(SAMPLE_URI, '');
+        expect(await store.isEncrypted()).toBe(false);
+        await store.setPassword('', 'new-pw');
+        expect(await store.isEncrypted()).toBe(true);
+        expect(await store.isValid('')).toBe(false);
+        expect(await store.isValid('new-pw')).toBeTruthy();
+        expect((await store.get('new-pw'))[0].name).toBe('test');
+    });
+
+    test('setPassword with empty new password clears encryption', async () => {
+        const { store } = makeStore();
+        await store.seed(SAMPLE_URI, 'secret');
+        expect(await store.isEncrypted()).toBe(true);
+        await store.setPassword('secret', '');
+        expect(await store.isEncrypted()).toBe(false);
+        expect(await store.isValid('')).toBeTruthy();
+        expect((await store.get(''))[0].name).toBe('test');
+    });
+
+    test('setPassword creates an empty encrypted vault when no file exists yet', async () => {
+        const { store } = makeStore();
+        expect(await store.isValidBackupFile()).toBe(false);
+        await store.setPassword('', 'first-pw');
+        expect(await store.isValidBackupFile()).toBe(true);
+        expect(await store.isEncrypted()).toBe(true);
+        expect(await store.isValid('first-pw')).toBe(0);
+        expect(await store.get('first-pw')).toEqual([]);
+    });
+
     test('v1 unencrypted vault: get() migrates to v2 and backfills ids, preserving content', async () => {
         const { storage, store } = makeStore();
         storage.data = JSON.stringify({ is_encrypted: false, accounts: JSON.stringify(V1_ACCOUNTS) });

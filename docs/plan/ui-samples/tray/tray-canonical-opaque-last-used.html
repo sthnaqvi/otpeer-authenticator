@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OTPeer tray — ready</title>
+  <style>
+    :root {
+      --bg: #2b2b2b;
+      --fg: #ffffff;
+      --dim: #9a9a9a;
+      --sep: rgba(255, 255, 255, 0.12);
+      --accent: #4b8bd6;
+      --hover: rgba(255, 255, 255, 0.08);
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+              "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      background: #5a6b7c;
+    }
+    .stage {
+      width: 480px;
+      height: 280px;
+      margin-left: auto;
+      background: linear-gradient(180deg, #6a7d90 0%, #3d4c5a 100%);
+      position: relative;
+    }
+    .menu-bar {
+      height: 24px;
+      background: #2c2c2e;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 0 14px;
+      color: #e8e8e8;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .tray-hit {
+      display: inline-flex;
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .tray-icon { width: 15px; height: 15px; display: block; }
+
+    .panel {
+      position: absolute;
+      top: 28px;
+      right: 48px;
+      width: 280px;
+      background: var(--bg);
+      border-radius: 6px;
+      padding: 4px 0;
+      box-shadow: 0 0 0 0.5px rgba(0,0,0,0.45), 0 10px 28px rgba(0,0,0,0.38);
+    }
+
+    .item {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      padding: 2px 12px;
+      min-height: 20px;
+      color: var(--fg);
+      font: 400 13px/20px var(--font);
+      letter-spacing: -0.008em;
+      white-space: nowrap;
+    }
+    .item:hover { background: var(--hover); }
+
+    .sep {
+      height: 1px;
+      margin: 4px 0;
+      border: 0;
+      background: var(--sep);
+    }
+
+    /* Compact OTP: Google — code + timer on one line; email under; tight padding */
+    .otp {
+      position: relative;
+      padding: 1px 12px 2px; /* reduced top/bottom */
+    }
+    .otp:hover { background: var(--hover); }
+    .otp-hint {
+      position: absolute;
+      top: 3px;
+      right: 12px;
+      font: 500 9px/1 var(--font);
+      color: var(--dim);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .otp:hover .otp-hint { opacity: 1; }
+
+    .main-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 18px; /* reduced vs prior 22–28 */
+      padding-right: 48px;
+    }
+    .issuer, .dash, .digits {
+      font: 400 13px/18px var(--font);
+      letter-spacing: -0.008em;
+      color: var(--fg);
+      white-space: nowrap;
+    }
+    .digits {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.03em;
+      flex: 1;
+      min-width: 0;
+    }
+    .email {
+      font: 400 10px/12px var(--font);
+      color: var(--dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .timer {
+      width: 18px;
+      height: 18px;
+      position: relative;
+      flex-shrink: 0;
+      margin-left: 8px;
+    }
+    .timer svg { width: 18px; height: 18px; transform: rotate(-90deg); display: block; }
+    .timer .secs {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: 600 7px/1 var(--font);
+      font-variant-numeric: tabular-nums;
+      color: var(--dim);
+    }
+
+    .hint {
+      padding: 2px 12px 4px;
+      font: 400 12px/16px var(--font);
+      color: var(--dim);
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="menu-bar">
+      <span class="tray-hit">
+        <svg class="tray-icon" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2.5 L19.5 5.5 V11.5 C19.5 16.2 16.4 20.1 12 21.5 C7.6 20.1 4.5 16.2 4.5 11.5 V5.5 Z"
+                stroke="#f2f2f2" stroke-width="1.7" fill="none"/>
+          <rect x="8" y="8" width="2.2" height="7" rx="1.1" fill="#f2f2f2"/>
+          <rect x="11" y="8" width="2.2" height="7" rx="1.1" fill="#f2f2f2"/>
+          <rect x="14" y="8" width="2.2" height="7" rx="1.1" fill="#f2f2f2"/>
+        </svg>
+      </span>
+      <span>Wed</span>
+    </div>
+
+    <div class="panel" role="menu">
+      <button type="button" class="item">Open app</button>
+      <hr class="sep" />
+
+      <div class="otp" title="Last used — click to copy">
+        <span class="otp-hint">Last used</span>
+        <div class="main-row">
+          <span class="issuer">Google</span>
+          <span class="dash">—</span>
+          <span class="digits">728 521</span>
+          <div class="timer" aria-label="23 seconds">
+            <svg viewBox="0 0 18 18">
+              <circle cx="9" cy="9" r="6.8" fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="1.4"/>
+              <circle cx="9" cy="9" r="6.8" fill="none" stroke="#4b8bd6" stroke-width="1.4"
+                      stroke-dasharray="32 43" stroke-linecap="round"/>
+            </svg>
+            <span class="secs">23</span>
+          </div>
+        </div>
+        <div class="email">user@gmail.com</div>
+      </div>
+
+      <hr class="sep" />
+      <button type="button" class="item">Lock vault</button>
+      <button type="button" class="item">About OTPeer Authenticator</button>
+      <button type="button" class="item">Quit</button>
+    </div>
+  </div>
+  <script>
+    if (new URLSearchParams(location.search).get('hover') === '1') {
+      const s = document.createElement('style');
+      s.textContent = '.otp{background:var(--hover)}.otp .otp-hint{opacity:1}';
+      document.head.appendChild(s);
+    }
+  </script>
+</body>
+</html>

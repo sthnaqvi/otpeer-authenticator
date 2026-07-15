@@ -139,7 +139,7 @@ long-dead deletions don't ride along forever.
 ## Build/prove order
 
 1. Pairing (code + HKDF), transport (framing + one-shot listener), and
-   merge logic land in `@authenticator/core` behind the existing adapter
+   merge logic land in `packages/core` behind the existing adapter
    seams, fully unit-tested (frame round-trip, tamper abort, merge matrix,
    tombstone GC).
 2. `authenticator --sync` (host) / `authenticator --sync <uri-or-host:port>`

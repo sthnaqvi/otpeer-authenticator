@@ -2,13 +2,13 @@
   "name": "authenticator-clui-monorepo",
   "version": "0.0.0",
   "private": true,
-  "description": "Monorepo for authenticator-clui: CLI, desktop, and mobile clients sharing @authenticator/core",
+  "description": "Monorepo for authenticator-clui: CLI, desktop, and mobile clients sharing packages/core",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace=@authenticator/core && npm run vendor-core --workspace=authenticator-clui",
-    "test": "npm run test --workspace=@authenticator/core"
+    "build": "npm run build --workspace=packages/core && npm run vendor-core --workspace=authenticator-clui",
+    "test": "npm run test --workspace=packages/core"
   },
   "repository": {
     "type": "git",

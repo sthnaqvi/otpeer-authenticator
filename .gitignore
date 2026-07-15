@@ -58,5 +58,10 @@ authenticator-backup.*
 # TypeScript build output
 packages/*/dist
 
-# Vendored copy of @authenticator/core inlined into the published CLI package
+# Vendored copy of packages/core inlined into the published CLI package
 packages/cli/vendor
+# desktop build outputs
+packages/desktop/dist-electron
+packages/desktop/dist-renderer
+packages/desktop/release
+packages/desktop/vendor

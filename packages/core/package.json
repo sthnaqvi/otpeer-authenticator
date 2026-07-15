@@ -10,15 +10,16 @@
     "test": "jest"
   },
   "dependencies": {
-    "fs-extra": "^10.0.0",
-    "protobufjs": "^8.7.0"
+    "fs-extra": "^11.3.6",
+    "protobufjs": "^8.7.1"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.13",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20.14.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.6.3"
+    "@swc/core": "^1.15.43",
+    "@swc/jest": "^0.2.39",
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.1.1",
+    "jest": "^30.4.2",
+    "typescript": "^7.0.2"
   }
 }

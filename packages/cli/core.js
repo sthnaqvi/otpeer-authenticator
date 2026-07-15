@@ -3,10 +3,10 @@
 const path = require('path');
 
 /**
- * @authenticator/core is a private workspace package, never published to
- * npm. It's vendored into vendor/core (see the "vendor-core" script in
- * package.json, run automatically by prepublishOnly) so a published
- * `authenticator-clui` install has no external dependency on it.
+ * packages/core is private workspace code, never published to npm. It's
+ * vendored into vendor/core (see the "vendor-core" script in package.json,
+ * run automatically by prepublishOnly) so a published `authenticator-clui`
+ * install has no external dependency on it.
  */
 const core = require('./vendor/core');
 

@@ -2,7 +2,7 @@
 
 ## Goal
 
-UI over `@authenticator/core`, using mobile-specific `StorageAdapter` and
+UI over `packages/core`, using mobile-specific `StorageAdapter` and
 `CryptoProvider` implementations. No Bluetooth, no discovery — sync joins
 by dialing the address scanned from the host's pairing QR (see Stage C's
 permissions budget).

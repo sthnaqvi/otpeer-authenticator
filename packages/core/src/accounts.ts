@@ -191,6 +191,24 @@ export class AccountsStore {
     }
 
     /**
+     * Re-encrypt, first-time encrypt, or clear encryption on the vault.
+     * `currentPassword` must unlock the existing vault (empty string if plaintext).
+     * Pass an empty `newPassword` to store the vault unencrypted on disk.
+     * If no vault file exists yet, a non-empty `newPassword` creates an empty
+     * encrypted vault (so Lock / Settings work before the first account).
+     */
+    async setPassword(currentPassword: string, newPassword: string): Promise<void> {
+        const exists = await this.isValidBackupFile();
+        if (!exists) {
+            if (!newPassword) return;
+            await this.writeVault([], newPassword);
+            return;
+        }
+        const accounts = await this.get(currentPassword);
+        await this.writeVault(accounts, newPassword);
+    }
+
+    /**
      * Delete the accounts backup file entirely.
      */
     async flushAll(): Promise<void> {

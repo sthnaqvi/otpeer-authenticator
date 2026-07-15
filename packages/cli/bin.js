@@ -15,11 +15,22 @@ const ui = require('./src/ui');
 
 const passwordPrompt = new PasswordPrompt({ promptMsg: "Enter password: " });
 
+// Commander 15+ only allows single-character short flags, so -en cannot be
+// registered as a real flag. Rewrite argv so -en still works, and restore
+// "-en, --encrypt" in help so the CLI docs match what users type.
+const cli_argv = process.argv.map((arg) => (arg === '-en' ? '--encrypt' : arg));
+
 program
     .name("auth")
     .description("A simple command-line authenticator with an encrypted local vault.\nImport from Google/Microsoft/Facebook Authenticator, Aegis, 2FAS, or andOTP — or add accounts directly.\n(`auth` and `authenticator` are the same command.)")
     .usage("[options]")
     .showHelpAfterError('(run "auth --help" for usage and examples)')
+    .configureHelp({
+        optionTerm(option) {
+            if (option.long === '--encrypt') return '-en, --encrypt';
+            return option.flags;
+        },
+    })
     .addHelpText('after', `
 Examples:
   auth -a                                  add an account interactively
@@ -43,7 +54,7 @@ Modifiers (always combined with another option, never alone):
 Docs: https://github.com/sthnaqvi/authenticator-clui#readme`)
     .version(require('./package.json').version, '-v, --version', 'Print the installed version')
     .option('-i, --import <uri-or-file>', 'Import account(s) from an "otpauth-migration://" export URI, a single "otpauth://" URI, a backup made with --export, or an Aegis/2FAS/andOTP backup file (auto-detected)')
-    .option('-en, --encrypt', '(use with -i/-a on a new vault) Encrypt the vault with AES-256 using a password of your choice')
+    .option('--encrypt', '(use with -i/-a on a new vault) Encrypt the vault with AES-256 using a password of your choice')
     .option('-m, --merge', '(use with -i) Merge into the existing vault instead of refusing')
     .option('-a, --add [otpauth-uri]', 'Add a single TOTP account: interactive prompts, or pass an "otpauth://totp/..." URI')
     .option('--remove <name>', 'Remove one account by name, issuer(name), or id prefix')
@@ -60,7 +71,7 @@ Docs: https://github.com/sthnaqvi/authenticator-clui#readme`)
     .option('-d, --delete', 'Delete imported accounts !!!Can\'t restore')
     .option('-f, --force', '(use with -d or -i -m) Skip the password check when deleting / overwrite conflicting secrets when merging')
     .option('-r, --run', 'Run authenticator with imported accounts')
-    .parse(process.argv);
+    .parse(cli_argv);
 
 const fail = (message) => {
     ui.err(message);
