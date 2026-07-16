@@ -1,6 +1,6 @@
 # Step 2 — Accounts
 
-Target: [`../otpeer-design-01b-accounts.png`](../otpeer-design-01b-accounts.png)
+Target: shipping desktop UI (live app). Product screenshots: `website/public/assets/screenshot-*.png` (regenerate via `packages/desktop` → `npm run capture:screenshots`).
 
 ## Notes
 

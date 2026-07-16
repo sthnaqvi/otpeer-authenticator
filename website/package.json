@@ -1,0 +1,15 @@
+{
+  "name": "otpeer-website",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OTPeer Authenticator landing page (otpeer.com)",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}

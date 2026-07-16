@@ -65,3 +65,6 @@ packages/desktop/dist-electron
 packages/desktop/dist-renderer
 packages/desktop/release
 packages/desktop/vendor
+
+# Website (Vite) build output
+website/dist

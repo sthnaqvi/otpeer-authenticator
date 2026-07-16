@@ -1,6 +1,6 @@
 # Step 4 — Unlock
 
-Target: [`../otpeer-design-03-unlock.png`](../otpeer-design-03-unlock.png)
+Target: shipping desktop UI (live app). Product screenshots: `website/public/assets/screenshot-*.png` (regenerate via `packages/desktop` → `npm run capture:screenshots`).
 
 ## Implemented
 

@@ -14,6 +14,7 @@
     "start": "npm run build && node scripts/brand_electron_dev.js && OTPEER_DISABLE_UPDATER=1 electron .",
     "brand:electron": "node scripts/brand_electron_dev.js",
     "smoke": "npm run vendor-core && npm run build:main && node scripts/smoke.js",
+    "capture:screenshots": "npm run build && OTPEER_DISABLE_UPDATER=1 electron scripts/capture_marketing_screenshots.js",
     "pack": "npm run build && node -e \"require('fs').mkdirSync('node_modules',{recursive:true})\" && electron-builder --dir",
     "dist": "npm run build && node -e \"require('fs').mkdirSync('node_modules',{recursive:true})\" && electron-builder"
   },
@@ -21,7 +22,7 @@
     "name": "Sayed Tauseef Naqvi",
     "email": "tauseef.naqvi786@gmail.com"
   },
-  "homepage": "https://github.com/sthnaqvi/otpeer-authenticator#readme",
+  "homepage": "https://otpeer.com",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sthnaqvi/otpeer-authenticator.git",

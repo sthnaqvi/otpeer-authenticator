@@ -1,6 +1,6 @@
 # Step 6 — Sync devices
 
-Target: [`../otpeer-design-04-sync.png`](../otpeer-design-04-sync.png)
+Target: shipping desktop UI (live app). Product screenshots: `website/public/assets/screenshot-*.png` (regenerate via `packages/desktop` → `npm run capture:screenshots`).
 
 ## Implemented
 

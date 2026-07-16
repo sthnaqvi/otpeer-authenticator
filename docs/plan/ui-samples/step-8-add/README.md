@@ -1,6 +1,6 @@
 # Step 8 — Add account
 
-Target: [`../otpeer-design-06-add.png`](../otpeer-design-06-add.png)
+Target: shipping desktop UI (live app). Product screenshots: `website/public/assets/screenshot-*.png` (regenerate via `packages/desktop` → `npm run capture:screenshots`).
 
 ## Implemented
 

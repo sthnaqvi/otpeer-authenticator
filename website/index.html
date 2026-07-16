@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="OTPeer Authenticator — free open-source 2FA app with serverless peer-to-peer sync. TOTP two-factor authentication codes stay on your devices: no cloud, no account, no telemetry. For macOS, Windows, and Linux."
+    />
+    <meta name="theme-color" content="#121212" />
+    <link rel="canonical" href="https://otpeer.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="OTPeer Authenticator" />
+    <meta property="og:title" content="OTPeer Authenticator — Open-Source 2FA with P2P Sync" />
+    <meta
+      property="og:description"
+      content="Free open-source 2FA authenticator with serverless peer-to-peer sync. Your codes never leave your devices — no cloud, no account, no telemetry."
+    />
+    <meta property="og:url" content="https://otpeer.com/" />
+    <meta property="og:image" content="https://otpeer.com/assets/social-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="OTPeer Authenticator — Open-Source 2FA with P2P Sync" />
+    <meta
+      name="twitter:description"
+      content="Free open-source 2FA authenticator with serverless peer-to-peer sync. Your codes never leave your devices."
+    />
+    <meta name="twitter:image" content="https://otpeer.com/assets/social-card.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <title>OTPeer Authenticator — Open-Source 2FA App with Peer-to-Peer Sync</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "OTPeer Authenticator",
+        "url": "https://otpeer.com/",
+        "image": "https://otpeer.com/assets/social-card.png",
+        "description": "Free open-source 2FA (TOTP) authenticator app with serverless peer-to-peer sync. Two-factor authentication codes stay on your devices — no cloud, no account, no telemetry.",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "macOS, Windows, Linux",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "license": "https://github.com/sthnaqvi/otpeer-authenticator/blob/master/LICENSE",
+        "downloadUrl": "https://github.com/sthnaqvi/otpeer-authenticator/releases",
+        "author": { "@type": "Person", "name": "Sayed Tauseef Naqvi", "url": "https://github.com/sthnaqvi" }
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "What is OTPeer Authenticator?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "OTPeer Authenticator is a free, open-source authenticator that generates TOTP two-factor (2FA) codes on desktop (macOS, Windows, Linux) and in the terminal via CLI. Your encrypted vault lives on your devices and syncs peer-to-peer — no cloud, no account, no telemetry."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does sync work without a server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "You pair two devices with a QR code (or a short pairing code), and they merge vaults directly over your local network. There is no relay and no backend server — your secrets never touch the internet."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What happens if I lose a device?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Every synced device holds a complete copy of your vault, so any other paired device keeps working and can pair a replacement. Keep at least two devices in sync, or keep an encrypted export as a backup."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I import from Google Authenticator or other apps?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. OTPeer imports Google Authenticator, Microsoft Authenticator, and Facebook export codes, plus backups from Aegis, 2FAS, and andOTP."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is my vault encrypted?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Your vault is stored locally and protected with AES encryption when you set a password. Nothing is uploaded anywhere, and there is nothing to sign up for."
+            }
+          }
+        ]
+      }
+    </script>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="/">
+        <img src="/assets/mark.png" alt="" width="36" height="36" />
+        <span class="brand-text">
+          <span class="brand-name">OTPeer</span>
+          <span class="brand-sub">Authenticator</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#download">Download</a>
+        <a href="#surfaces">Apps</a>
+        <a href="#how">How it works</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/sthnaqvi/otpeer-authenticator">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span class="chip">Open source</span>
+            <span class="chip">Local vault</span>
+            <span class="chip">P2P sync</span>
+          </p>
+          <h1>
+            <span class="hero-brand">OTPeer</span>
+            <span class="hero-product">Authenticator</span>
+          </h1>
+          <p class="lede">
+            Open-source two-factor authentication (2FA) with serverless
+            peer-to-peer sync. Your codes stay on your devices — no cloud, no
+            account, no telemetry.
+          </p>
+          <div class="cta-row">
+            <a
+              id="primary-cta"
+              class="btn btn-primary"
+              href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            >
+              Download Desktop
+            </a>
+            <a class="btn btn-secondary" href="#cli">Install CLI</a>
+          </div>
+          <p id="cta-hint" class="cta-hint" hidden></p>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <img
+            src="/assets/screenshot-unlock.png"
+            alt=""
+            class="hero-shot hero-shot-back"
+            width="400"
+            height="680"
+            loading="lazy"
+          />
+          <img
+            src="/assets/screenshot-accounts.png"
+            alt=""
+            class="hero-shot hero-shot-front"
+            width="400"
+            height="680"
+          />
+        </div>
+      </section>
+
+      <section class="surfaces" id="surfaces">
+        <h2>One authenticator, three surfaces</h2>
+        <p class="section-lede">
+          Same encrypted vault logic across CLI and Desktop. Mobile is on the way.
+        </p>
+        <div class="surface-grid">
+          <article class="surface">
+            <div class="surface-media" aria-hidden="true">
+              <img src="/assets/screenshot-accounts.png" alt="" loading="lazy" />
+            </div>
+            <div class="surface-head">
+              <span class="surface-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="20" height="13" rx="2" />
+                  <path d="M8 21h8M12 17v4" />
+                </svg>
+              </span>
+              <h3>Desktop</h3>
+              <span class="status ready">Ready</span>
+            </div>
+            <p>OTPeer Authenticator for macOS, Windows, and Linux.</p>
+            <div class="surface-foot">
+              <a class="text-link" href="#download">Download installers</a>
+            </div>
+          </article>
+          <article class="surface" id="cli">
+            <div class="surface-media" aria-hidden="true">
+              <div class="term">
+                <div class="term-bar"><span></span><span></span><span></span></div>
+                <pre class="term-body">$ authenticator-clui
+GitHub     <span class="term-code">482 913</span>  <span class="term-dim">18s</span>
+Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</span>
+<span class="term-cursor">▊</span></pre>
+              </div>
+            </div>
+            <div class="surface-head">
+              <span class="surface-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="18" rx="2" />
+                  <path d="M7 9l3 3-3 3M12 15h5" />
+                </svg>
+              </span>
+              <h3>CLI</h3>
+              <span class="status ready">Ready</span>
+            </div>
+            <p>Live codes in your terminal via npm.</p>
+            <div class="surface-foot install-row">
+              <code class="install-cmd" id="cli-cmd">npm install -g authenticator-clui</code>
+              <button type="button" class="btn btn-ghost" id="copy-cli" aria-live="polite">Copy</button>
+            </div>
+          </article>
+          <article class="surface">
+            <div class="surface-media surface-media-soon" aria-hidden="true">
+              <img src="/assets/screenshot-unlock.png" alt="" loading="lazy" />
+            </div>
+            <div class="surface-head">
+              <span class="surface-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="7" y="2" width="10" height="20" rx="2.5" />
+                  <path d="M11 18.5h2" />
+                </svg>
+              </span>
+              <h3>Mobile</h3>
+              <span class="status soon">Coming soon</span>
+            </div>
+            <p>React Native for iOS and Android — App Store, Play, and F-Droid planned.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="sync" id="how">
+        <h2>Sync without a server</h2>
+        <p class="section-lede">
+          Pair two devices with a QR code and merge vaults directly over your
+          local network. No relay, no middleman — your secrets never touch the
+          internet.
+        </p>
+        <div class="sync-grid">
+          <ol class="steps">
+            <li>
+              <span class="step-num" aria-hidden="true">1</span>
+              <div>
+                <strong>Unlock your vault</strong>
+                <span>Codes stay encrypted at rest on each device.</span>
+              </div>
+            </li>
+            <li>
+              <span class="step-num" aria-hidden="true">2</span>
+              <div>
+                <strong>Pair with a QR code</strong>
+                <span>One device shows the code, the other scans it. That's the whole handshake.</span>
+              </div>
+            </li>
+            <li>
+              <span class="step-num" aria-hidden="true">3</span>
+              <div>
+                <strong>Merge peer-to-peer</strong>
+                <span>Vaults reconcile over your LAN — both devices end up complete and current.</span>
+              </div>
+            </li>
+          </ol>
+          <div class="sync-visual" aria-hidden="true">
+            <img
+              src="/assets/screenshot-sync.png"
+              alt=""
+              class="sync-shot"
+              width="400"
+              height="680"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section class="download" id="download">
+        <h2>Download Desktop</h2>
+        <p class="section-lede">
+          Latest build from
+          <a href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            >GitHub Releases</a
+          >. Pick your platform if auto-detect is wrong.
+        </p>
+        <p id="release-meta" class="release-meta" aria-live="polite">
+          Loading latest release…
+        </p>
+        <div class="platform-grid" id="platform-buttons">
+          <a
+            class="platform-btn"
+            data-platform="mac-arm64"
+            href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+          >
+            macOS (Apple Silicon)
+          </a>
+          <a
+            class="platform-btn"
+            data-platform="mac-x64"
+            href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+          >
+            macOS (Intel)
+          </a>
+          <a
+            class="platform-btn"
+            data-platform="win"
+            href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+          >
+            Windows
+          </a>
+          <a
+            class="platform-btn"
+            data-platform="linux-appimage"
+            href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+          >
+            Linux AppImage
+          </a>
+          <a
+            class="platform-btn"
+            data-platform="linux-deb"
+            href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+          >
+            Linux .deb
+          </a>
+        </div>
+        <div class="note-grid">
+          <aside class="note-card">
+            <h3>
+              <span class="note-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 8h.01M12 11v5" />
+                </svg>
+              </span>
+              macOS unsigned build
+            </h3>
+            <p>
+              Phase 1 builds are not Developer ID signed. After install, clear
+              quarantine once:
+            </p>
+            <pre><code>xattr -cr "/Applications/OTPeer Authenticator.app"
+open "/Applications/OTPeer Authenticator.app"</code></pre>
+          </aside>
+          <aside class="note-card">
+            <h3>
+              <span class="note-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3l8 3v6c0 4.5-3.4 7.8-8 9-4.6-1.2-8-4.5-8-9V6l8-3z" />
+                  <path d="M9.5 12.5l2 2 3.5-4" />
+                </svg>
+              </span>
+              Verify your download
+            </h3>
+            <p>
+              Compare your file's SHA-512 with the value in the checksum
+              manifest (<code>latest-mac.yml</code>, <code>latest.yml</code>, or
+              <code>latest-linux.yml</code>) on the
+              <a href="https://github.com/sthnaqvi/otpeer-authenticator/releases">release page</a>:
+            </p>
+            <pre><code>openssl dgst -sha512 -binary "&lt;downloaded-file&gt;" | base64</code></pre>
+          </aside>
+        </div>
+      </section>
+
+      <section class="why" id="why">
+        <h2>Why OTPeer</h2>
+        <ul class="why-list">
+          <li>
+            <span class="why-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="10" width="16" height="11" rx="2" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+              </svg>
+            </span>
+            <strong>Encrypted local vault</strong>
+            <span>Codes live on your machine — AES-protected when you choose.</span>
+          </li>
+          <li>
+            <span class="why-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 16V8m0 8-3-3m3 3 3-3M17 8v8m0-8-3 3m3-3 3 3" />
+              </svg>
+            </span>
+            <strong>Peer-to-peer sync</strong>
+            <span>QR-paired merge over your network. No backend server.</span>
+          </li>
+          <li>
+            <span class="why-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3l8 3v6c0 4.5-3.4 7.8-8 9-4.6-1.2-8-4.5-8-9V6l8-3z" />
+                <path d="M9.5 12.5l2 2 3.5-4" />
+              </svg>
+            </span>
+            <strong>No account, no telemetry</strong>
+            <span>Nothing to sign up for. Nothing phoned home.</span>
+          </li>
+          <li>
+            <span class="why-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4v11m0 0-4-4m4 4 4-4M4 19h16" />
+              </svg>
+            </span>
+            <strong>Import what you already have</strong>
+            <span>Google / Microsoft / Facebook exports, plus Aegis, 2FAS, andOTP.</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="compare" id="compare">
+        <h2>How OTPeer compares to other authenticator apps</h2>
+        <p class="section-lede">
+          Most authenticator apps route your two-factor secrets through someone
+          else's cloud. OTPeer doesn't.
+        </p>
+        <div class="table-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-feature">Feature</th>
+                <th scope="col" class="col-otpeer">
+                  <span class="brand-cell">
+                    <img src="/assets/mark.png" alt="" width="28" height="28" />
+                    <span class="brand-cell-text">
+                      <span>OTPeer</span>
+                      <small>Authenticator</small>
+                    </span>
+                  </span>
+                </th>
+                <th scope="col" class="col-rival">
+                  <span class="rival-cell">
+                    <span class="rival-mark" aria-hidden="true">G</span>
+                    <span class="rival-cell-text">
+                      <span>Google</span>
+                      <small>Authenticator</small>
+                    </span>
+                  </span>
+                </th>
+                <th scope="col" class="col-rival">
+                  <span class="rival-cell">
+                    <span class="rival-mark rival-mark-authy" aria-hidden="true">A</span>
+                    <span class="rival-cell-text">
+                      <span>Authy</span>
+                      <small>Twilio</small>
+                    </span>
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Open source</th>
+                <td class="col-otpeer"><span class="yes">Yes</span></td>
+                <td><span class="no">No</span></td>
+                <td><span class="no">No</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Where your codes live</th>
+                <td class="col-otpeer">Only your devices</td>
+                <td>Google's cloud when backup is on</td>
+                <td>Authy's servers</td>
+              </tr>
+              <tr>
+                <th scope="row">Sync method</th>
+                <td class="col-otpeer">Peer-to-peer over your network</td>
+                <td>Google Account</td>
+                <td>Authy cloud</td>
+              </tr>
+              <tr>
+                <th scope="row">Account required</th>
+                <td class="col-otpeer"><span class="yes">None</span></td>
+                <td>Google Account for backup</td>
+                <td>Phone number</td>
+              </tr>
+              <tr>
+                <th scope="row">Telemetry</th>
+                <td class="col-otpeer"><span class="yes">None</span></td>
+                <td><span class="no">Yes</span></td>
+                <td><span class="no">Yes</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Desktop + CLI apps</th>
+                <td class="col-otpeer"><span class="yes">Yes</span></td>
+                <td><span class="no">No</span></td>
+                <td>Desktop discontinued</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="faq" id="faq">
+        <h2>Frequently asked questions</h2>
+        <details class="faq-item">
+          <summary>
+            <span>What is OTPeer Authenticator?</span>
+            <svg class="faq-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </summary>
+          <p>
+            OTPeer Authenticator is a free, open-source authenticator that
+            generates TOTP two-factor (2FA) codes on desktop (macOS, Windows,
+            Linux) and in the terminal via CLI. Your encrypted vault lives on
+            your devices and syncs peer-to-peer — no cloud, no account, no
+            telemetry.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>
+            <span>How does sync work without a server?</span>
+            <svg class="faq-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </summary>
+          <p>
+            You pair two devices with a QR code (or a short pairing code), and
+            they merge vaults directly over your local network. There is no
+            relay and no backend server — your secrets never touch the
+            internet.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>
+            <span>What happens if I lose a device?</span>
+            <svg class="faq-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </summary>
+          <p>
+            Every synced device holds a complete copy of your vault, so any
+            other paired device keeps working and can pair a replacement. Keep
+            at least two devices in sync, or keep an encrypted export as a
+            backup.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>
+            <span>Can I import from Google Authenticator or other apps?</span>
+            <svg class="faq-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </summary>
+          <p>
+            Yes. OTPeer imports Google Authenticator, Microsoft Authenticator,
+            and Facebook export codes, plus backups from Aegis, 2FAS, and
+            andOTP.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>
+            <span>Is my vault encrypted?</span>
+            <svg class="faq-chevron" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          </summary>
+          <p>
+            Yes. Your vault is stored locally and protected with AES encryption
+            when you set a password. Nothing is uploaded anywhere, and there is
+            nothing to sign up for.
+          </p>
+        </details>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand">
+        <img src="/assets/mark.png" alt="" width="28" height="28" />
+        <span>OTPeer Authenticator</span>
+      </div>
+      <p class="footer-links">
+        <a href="https://otpeer.com">otpeer.com</a>
+        <a href="https://github.com/sthnaqvi/otpeer-authenticator">GitHub</a>
+        <a href="https://www.npmjs.com/package/authenticator-clui">npm</a>
+        <a href="https://github.com/sthnaqvi/otpeer-authenticator/blob/master/LICENSE"
+          >MIT License</a
+        >
+      </p>
+      <p class="footer-copy">Open source. You own your codes.</p>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
