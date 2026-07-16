@@ -1,11 +1,61 @@
 import jsQR from 'jsqr';
 
+type InversionAttempts = 'dontInvert' | 'onlyInvert' | 'attemptBoth' | 'invertFirst';
+
+/**
+ * Cap on the longest edge fed to jsQR for live-camera frames. jsQR cost is
+ * roughly linear in pixel count, so bounding this keeps each frame real-time
+ * while still leaving enough resolution (~6+ px/module) for dense QR codes.
+ */
+const CAMERA_MAX_EDGE = 1024;
+
+/** Cache one 2d context per canvas so live scanning doesn't re-fetch it each frame. */
+const ctx_cache = new WeakMap<HTMLCanvasElement, CanvasRenderingContext2D>();
+
+function get_reusable_ctx(canvas: HTMLCanvasElement): CanvasRenderingContext2D | null {
+    const cached = ctx_cache.get(canvas);
+    if (cached) return cached;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    if (ctx) ctx_cache.set(canvas, ctx);
+    return ctx;
+}
+
 /** Decode a QR payload from raw RGBA pixels. */
-export function decodeQrFromImageData(image_data: ImageData): string | null {
+export function decodeQrFromImageData(
+    image_data: ImageData,
+    inversion: InversionAttempts = 'attemptBoth',
+): string | null {
     const result = jsQR(image_data.data, image_data.width, image_data.height, {
-        inversionAttempts: 'attemptBoth',
+        inversionAttempts: inversion,
     });
     return result?.data?.trim() || null;
+}
+
+/**
+ * Decode a QR from a live video frame. Tuned for real-time scanning: downscale
+ * to a bounded working size, reuse a single caller-owned canvas (no per-frame
+ * allocation), and run a single non-inverted jsQR pass — a camera sees a QR as
+ * dark-on-light, so `attemptBoth` would just double the work for nothing. This
+ * keeps the effective sample rate high enough to catch a sharp handheld frame.
+ */
+export function decodeQrFromVideoFrame(
+    source: CanvasImageSource,
+    width: number,
+    height: number,
+    canvas: HTMLCanvasElement,
+    inversion: InversionAttempts = 'dontInvert',
+): string | null {
+    if (width < 1 || height < 1) return null;
+    const scale = Math.min(1, CAMERA_MAX_EDGE / Math.max(width, height));
+    const w = Math.max(1, Math.round(width * scale));
+    const h = Math.max(1, Math.round(height * scale));
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
+    const ctx = get_reusable_ctx(canvas);
+    if (!ctx) return null;
+    ctx.imageSmoothingEnabled = scale < 1;
+    ctx.drawImage(source, 0, 0, w, h);
+    return decodeQrFromImageData(ctx.getImageData(0, 0, w, h), inversion);
 }
 
 /**

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { AccountView, SyncSummary } from './api';
 import { IssuerAvatar } from './IssuerAvatar';
-import { decodeQrFromCanvasSource, decodeQrFromDataUrl, decodeQrFromFile } from './qr_scan';
+import { decodeQrFromVideoFrame, decodeQrFromDataUrl, decodeQrFromFile } from './qr_scan';
 import markUrl from './assets/mark.png';
 
 const api = window.otpeer;
@@ -1484,6 +1484,7 @@ function QrCameraScanner({
     deniedHint: string;
 }) {
     const video_ref = useRef<HTMLVideoElement>(null);
+    const scan_canvas_ref = useRef<HTMLCanvasElement | null>(null);
     const found_ref = useRef(false);
     const on_found_ref = useRef(onFound);
     const on_error_ref = useRef(onError);
@@ -1496,6 +1497,7 @@ function QrCameraScanner({
         let stream: MediaStream | null = null;
         let raf = 0;
         let cancelled = false;
+        let frames = 0;
 
         const stop = () => {
             cancelled = true;
@@ -1507,12 +1509,28 @@ function QrCameraScanner({
             if (cancelled || found_ref.current) return;
             const video = video_ref.current;
             if (video && video.readyState >= 2 && video.videoWidth > 0) {
-                const payload = decodeQrFromCanvasSource(video, video.videoWidth, video.videoHeight);
-                if (payload) {
-                    found_ref.current = true;
-                    stop();
-                    on_found_ref.current(payload);
-                    return;
+                if (!scan_canvas_ref.current) {
+                    scan_canvas_ref.current = document.createElement('canvas');
+                }
+                // Standard QR is dark-on-light; sample inverted every 8th frame so a
+                // rare light-on-dark code still decodes without the every-frame cost.
+                const inversion = ++frames % 8 === 0 ? 'onlyInvert' : 'dontInvert';
+                try {
+                    const payload = decodeQrFromVideoFrame(
+                        video,
+                        video.videoWidth,
+                        video.videoHeight,
+                        scan_canvas_ref.current,
+                        inversion,
+                    );
+                    if (payload) {
+                        found_ref.current = true;
+                        stop();
+                        on_found_ref.current(payload);
+                        return;
+                    }
+                } catch {
+                    // A transient decode/readback error must not kill the scan loop.
                 }
             }
             raf = requestAnimationFrame(tick);
@@ -1525,21 +1543,37 @@ function QrCameraScanner({
                 return;
             }
             try {
+                // Ask for a crisp, higher-res stream so a sharp frame is
+                // available even with a shaky handheld phone.
+                const ideal_video: MediaTrackConstraints = {
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    frameRate: { ideal: 30 },
+                };
                 try {
                     stream = await navigator.mediaDevices.getUserMedia({
                         audio: false,
-                        video: { facingMode: 'environment' },
+                        video: ideal_video,
                     });
                 } catch {
                     // Desktop webcams often have no rear camera — fall back.
                     stream = await navigator.mediaDevices.getUserMedia({
                         audio: false,
-                        video: true,
+                        video: { width: { ideal: 1280 }, height: { ideal: 720 } },
                     });
                 }
                 if (cancelled) {
                     stream.getTracks().forEach((track) => track.stop());
                     return;
+                }
+                // Prefer continuous autofocus when the camera supports it.
+                const track = stream.getVideoTracks()[0];
+                const caps = track?.getCapabilities?.() as { focusMode?: string[] } | undefined;
+                if (caps?.focusMode?.includes('continuous')) {
+                    await track
+                        .applyConstraints({ advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet] })
+                        .catch(() => {});
                 }
                 const video = video_ref.current;
                 if (!video) return;
