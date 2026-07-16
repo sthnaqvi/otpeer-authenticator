@@ -1,6 +1,6 @@
 {
   "name": "authenticator-clui",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "A simple command-line authenticator with encryption (import accounts from Google Authenticator, Microsoft Authenticator and Facebook Authenticator)",
   "main": "index.js",
   "files": [
