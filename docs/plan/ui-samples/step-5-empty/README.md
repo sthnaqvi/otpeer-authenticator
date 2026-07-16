@@ -1,6 +1,6 @@
 # Step 5 — Empty vault
 
-Target: [`../otpeer-design-07-empty.png`](../otpeer-design-07-empty.png)
+Target: shipping desktop UI (live app). Product screenshots: `website/public/assets/screenshot-*.png` (regenerate via `packages/desktop` → `npm run capture:screenshots`).
 
 ## Implemented
 

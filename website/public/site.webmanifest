@@ -1,0 +1,13 @@
+{
+  "name": "OTPeer Authenticator",
+  "short_name": "OTPeer",
+  "description": "Open-source 2FA with serverless peer-to-peer sync.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-256.png", "sizes": "256x256", "type": "image/png" }
+  ]
+}

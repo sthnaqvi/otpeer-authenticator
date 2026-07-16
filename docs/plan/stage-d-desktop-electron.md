@@ -107,12 +107,12 @@ UI reference mockups + step reviews: [`docs/plan/ui-samples/`](ui-samples/).
 - Account cards: issuer avatar, name / email, accent OTP, ring timer, ⋮ menu
 - Floating accent **＋** FAB for Add
 - Empty vault: illustration + “No accounts yet — tap ＋ to add or open menu
-  to import or sync.” ([`otpeer-design-07-empty.png`](ui-samples/otpeer-design-07-empty.png))
+  to import or sync.”
 - **Issuer badges**: white-circle PNGs under `build/issuers/` (Simple Icons
   pipeline); Amazon vs AWS marks; letter-circle fallback. Prefer bundled
   files; network fetch only to fill cache when needed
 
-### Drawer (otpeer-design-09)
+### Drawer
 
 - ~150px left drawer (push layout — main column shifts; no dim overlay)
 - Compact account cards while open
@@ -142,20 +142,22 @@ UI reference mockups + step reviews: [`docs/plan/ui-samples/`](ui-samples/).
 - Locked: Show / Unlock… / Quit
 - App menu + About with OTPeer icon
 
-## OTPeer design mockup plan (step review)
+## OTPeer UI steps (shipped)
 
-Locked references in [`ui-samples/`](ui-samples/):
+Design mockup PNGs were removed after they drifted from the product.
+Source of truth is the live desktop app; website captures come from
+`npm run capture:screenshots` in `packages/desktop`.
 
-| Step | Target | Status |
-|------|--------|--------|
+| Step | Surface | Status |
+|------|---------|--------|
 | 1 Logo | A5 shield lockup | ✅ |
-| 2 Accounts | `otpeer-design-01b-accounts.png` | ✅ |
-| 3 Drawer | `otpeer-design-09-drawer-full.png` | ✅ |
-| 4 Unlock | `otpeer-design-03-unlock.png` | ✅ (+ Touch ID / password flows) |
-| 5 Empty | `otpeer-design-07-empty.png` | ✅ |
-| 6 Sync | `otpeer-design-04-sync.png` | ✅ |
-| 7 Settings | `otpeer-design-05-settings.png` | ✅ |
-| 8 Add | `otpeer-design-06-add.png` | ✅ |
+| 2 Accounts | Live app | ✅ |
+| 3 Drawer | Live app | ✅ |
+| 4 Unlock | Live app (+ Touch ID / password) | ✅ |
+| 5 Empty | Live app | ✅ |
+| 6 Sync | Live app | ✅ |
+| 7 Settings | Live app | ✅ |
+| 8 Add | Live app | ✅ |
 
 ## Updates (user decision: auto-check with opt-out)
 

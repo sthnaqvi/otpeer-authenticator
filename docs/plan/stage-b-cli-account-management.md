@@ -102,5 +102,4 @@ Landed right after the Stage B merge, on `hotfix/protobufjs-audit-readme`:
   countdown) with **dummy accounts only** (`demo@example.com`, fabricated
   codes). The SVG source sits next to it, so future UI changes regenerate
   the image via `sips -s format png -z 600 1640 cli_authenticator_v2.svg
-  --out cli_authenticator_v2.png` instead of a screenshot session. The old
-  `cli_authenticator.png` remains in the repo for history.
+  --out cli_authenticator_v2.png` instead of a screenshot session.

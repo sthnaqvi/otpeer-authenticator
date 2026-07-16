@@ -1,6 +1,6 @@
 # Step 7 — Settings
 
-Target: [`../otpeer-design-05-settings.png`](../otpeer-design-05-settings.png)
+Target: shipping desktop UI (live app). Product screenshots: `website/public/assets/screenshot-*.png` (regenerate via `packages/desktop` → `npm run capture:screenshots`).
 
 ## Implemented
 

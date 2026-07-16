@@ -6,10 +6,13 @@
 ![Downloads Total](https://img.shields.io/npm/dt/authenticator-clui.svg)
 ![Downloads Monthly](https://img.shields.io/npm/dm/authenticator-clui.svg)
 
-A simple command-line authenticator with encryption. Import your accounts
-once from Google Authenticator, Microsoft Authenticator, or Facebook
-Authenticator, then get live two-factor codes right in your terminal —
-optionally protected with AES-256 encryption and a password.
+CLI for **[OTPeer](https://otpeer.com)** — a simple command-line authenticator
+with encryption. Import your accounts once from Google Authenticator,
+Microsoft Authenticator, or Facebook Authenticator, then get live two-factor
+codes right in your terminal — optionally protected with AES-256 encryption
+and a password.
+
+Product site (Desktop downloads + overview): **[otpeer.com](https://otpeer.com)**
 
 ![CLI Authenticator](https://github.com/sthnaqvi/otpeer-authenticator/raw/master/readme_assets/cli_authenticator_v2.png "CLI Authenticator")
 

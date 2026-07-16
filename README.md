@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/npm/l/authenticator-clui.svg)](LICENSE)
 ![Downloads Monthly](https://img.shields.io/npm/dm/authenticator-clui.svg)
 
+**Website:** [https://otpeer.com](https://otpeer.com)
+
 **OTPeer** is an open source two-factor authenticator you fully own: your
 codes live in an encrypted local vault and sync **peer-to-peer between your
 own devices** — no cloud, no account, no telemetry. Import once from
@@ -18,11 +20,11 @@ future desktop/mobile apps ("OTPeer Authenticator" in the stores), carry
 the OTPeer brand — see the
 [branding decision](docs/plan/stage-c2-rebranding.md).
 
-**👉 If you just want to use the CLI, see the
-[package README](packages/cli/README.md) or the
-[npm page](https://www.npmjs.com/package/authenticator-clui).** This page is
-about the project as a whole: architecture, building from source, and
-contributing.
+**👉 End users:** download Desktop or install the CLI from
+[otpeer.com](https://otpeer.com). CLI details also live on the
+[package README](packages/cli/README.md) and
+[npm](https://www.npmjs.com/package/authenticator-clui). This page is about
+the project as a whole: architecture, building from source, and contributing.
 
 ![CLI Authenticator](readme_assets/cli_authenticator_v2.png "CLI Authenticator")
 
@@ -50,7 +52,7 @@ logic:
 | Surface | Status | Distribution |
 |---|---|---|
 | **CLI** (Node.js) | ✅ published | [npm](https://www.npmjs.com/package/authenticator-clui) |
-| **Desktop** "OTPeer Authenticator" (Electron, Mac/Ubuntu/Windows) | ✅ app ready; [ship via GitHub Releases](#desktop-releases) | [GitHub Releases](https://github.com/sthnaqvi/otpeer-authenticator/releases) (+ Homebrew/Flathub/winget later) |
+| **Desktop** "OTPeer Authenticator" (Electron, Mac/Ubuntu/Windows) | ✅ app ready | [otpeer.com](https://otpeer.com) ([GitHub Releases](https://github.com/sthnaqvi/otpeer-authenticator/releases) for artifacts; Homebrew/Flathub/winget later) |
 | **Mobile** "OTPeer Authenticator" (React Native, iOS/Android) | 🔜 planned | App Store / Play Store / F-Droid |
 
 Devices will sync **peer-to-peer over the local network, QR-paired — no
@@ -85,10 +87,10 @@ otpeer-authenticator/
 │       ├── build/                     OTPeer app / tray icons (icns, ico, png)
 │       ├── src/renderer/              React UI (hamburger IA, accounts, sync)
 │       └── vendor/core/               build-generated copy of core (gitignored)
+├── website/                 otpeer.com landing page (Vite → GitHub Pages)
 ├── docs/plan/               in-depth design docs, one per roadmap stage
 └── readme_assets/           images used by the READMEs
 ```
-
 ## Architecture
 
 The design rule that everything else follows from: **`packages/core`
@@ -149,9 +151,13 @@ Both output directories are gitignored; they're always regenerated.
 
 ## Desktop releases
 
-Installers for **OTPeer Authenticator** are published on
+End users should download **OTPeer Authenticator** from
+[otpeer.com](https://otpeer.com) (OS-aware links to the latest build).
+
+Installers are published on
 [GitHub Releases](https://github.com/sthnaqvi/otpeer-authenticator/releases)
-(tags named `desktop-v*`, e.g. `desktop-v0.1.0`).
+(tags named `desktop-v*`, e.g. `desktop-v0.1.0`) — that is the artifact
+source of truth the website points at.
 
 | Platform | Artifact |
 |---|---|
@@ -245,6 +251,7 @@ Development is staged; each stage has an in-depth design doc in
 | C ✅ | P2P sync v1: QR-paired local sync, minimal permissions, LWW merge | [doc](docs/plan/stage-c-sync-protocol.md) |
 | C2 ✅ | Rebranding: OTPeer product family, ASO/store naming, marketing plan | [doc](docs/plan/stage-c2-rebranding.md) |
 | D ✅ | Desktop app "OTPeer Authenticator" (Electron, Mac/Ubuntu/Windows) — [deployment channels](docs/plan/stage-d-deployment-channels.md) | [doc](docs/plan/stage-d-desktop-electron.md) |
+| D2 | Website at [otpeer.com](https://otpeer.com) — Desktop downloads, CLI install, marketing | [doc](docs/plan/stage-d2-website.md) |
 | E | Mobile app "OTPeer Authenticator" (React Native, iOS/Android) | [doc](docs/plan/stage-e-mobile-react-native.md) |
 | F | CI, packaging, store submissions | [doc](docs/plan/stage-f-distribution.md) |
 | G | Browser extension (desktop-app native messaging) | [doc](docs/plan/stage-g-browser-extension.md) |

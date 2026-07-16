@@ -32,9 +32,10 @@ current repo along the way.
 - ~~Decide on a shared product name/branding~~ ✅ decided in **Stage C2:
   OTPeer** — this stage executes the remaining branding mechanics: publish
   the `otpeer` npm alias package (thin wrapper re-exporting
-  `authenticator-clui` so both names install the same CLI), point
-  `otpeer.app` at the repo/landing page, alternativeto.net + GitHub topics
-  (`authenticator`, `totp`, `2fa`, `otp`) listings per the C2 marketing plan
+  `authenticator-clui` so both names install the same CLI), alternativeto.net
+  + GitHub topics (`authenticator`, `totp`, `2fa`, `otp`) listings per the C2
+  marketing plan. **Landing page / `otpeer.com` lives in Stage D2** —
+  [stage-d2-website.md](stage-d2-website.md).
 
 ## Non-goals
 

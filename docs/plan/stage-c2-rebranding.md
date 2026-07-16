@@ -26,7 +26,7 @@ search, .app/.com DNS):
 
 | Name | npm | GitHub | Domains | Product collisions |
 |---|---|---|---|---|
-| **OTPeer** | ✓ free | ✓ free | ✓ otpeer.app/.com free | none found |
+| **OTPeer** | ✓ free | ✓ free | ✓ otpeer.com free | none found |
 | Keyfold | ✓ free | — | ✓ free | none found |
 | Vaultkin | ✓ free | — | ✗ .app taken | none |
 | Tessera | ✗ taken | — | — | data-privacy co. |
@@ -83,8 +83,9 @@ product is genuinely the best answer**, plus open-source surfaces:
 
 ## Owner checklist (account actions only you can do)
 
-1. **Register `otpeer.app` and `otpeer.com` immediately** — verified
-   unregistered July 2026; clean names get sniped once public.
+1. **Register `otpeer.com` immediately** — verified unregistered July 2026;
+   clean names get sniped once public. Canonical product domain is
+   **https://otpeer.com** only.
 2. **Rename the repo**: GitHub → `authenticator-clui` → Settings → rename to
    `otpeer-authenticator`. GitHub redirects the old URL, clones, and remotes
    forever. Then locally:
