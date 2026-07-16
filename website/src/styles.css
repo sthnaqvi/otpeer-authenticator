@@ -287,6 +287,9 @@ main {
   font-size: 0.9rem;
   line-height: 1.4;
   min-height: 1.4em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hero-visual {
@@ -692,6 +695,167 @@ main {
   padding: 1.2rem 1.25rem;
   font-size: 0.9rem;
   color: var(--dim);
+}
+
+.note-card.is-emphasized {
+  border-color: rgba(75, 139, 214, 0.4);
+}
+
+#otpeer-download-frame {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.mac-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(94vw, 560px);
+  max-height: min(90vh, 680px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.mac-dialog:not([open]) {
+  display: none;
+}
+
+.mac-dialog[open] {
+  display: block;
+}
+
+.mac-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.mac-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 1.5rem 1.55rem 1.35rem;
+  overflow: auto;
+}
+
+.mac-dialog-body h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.mac-dialog-body > p {
+  margin: 0;
+  color: #c8cdd2;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.mac-dialog-steps {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #d5dae0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.mac-dialog-steps li::marker {
+  color: var(--accent);
+}
+
+.mac-dialog-cmd {
+  margin: 0;
+  padding: 0.95rem 1rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.mac-dialog-cmd code {
+  display: block;
+  color: var(--accent);
+  font-size: 0.82rem;
+  line-height: 1.65;
+  white-space: pre;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.mac-dialog-copy {
+  width: 100%;
+  font-size: 0.88rem;
+}
+
+.mac-dialog-status {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: 8px;
+  background: rgba(75, 139, 214, 0.12);
+  border: 1px solid rgba(75, 139, 214, 0.35);
+  color: #d5e6f7;
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.mac-dialog-ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  margin: 0.1rem 0 0;
+  padding: 0.9rem 0 0;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: transparent;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #d5dae0;
+  cursor: pointer;
+}
+
+.mac-dialog-ack input {
+  margin: 0.2rem 0 0;
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--accent);
+}
+
+.mac-dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 0.7rem;
+  margin-top: 0.1rem;
+}
+
+.mac-dialog-actions .btn {
+  width: 100%;
+}
+
+.mac-dialog-actions .btn-primary.is-disabled,
+.mac-dialog-actions .btn-primary[aria-disabled="true"] {
+  pointer-events: none;
+  opacity: 0.45;
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@media (max-width: 560px) {
+  .mac-dialog-cmd code {
+    font-size: 0.74rem;
+  }
 }
 
 .note-card h3 {

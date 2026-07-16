@@ -143,9 +143,8 @@
             <a
               id="primary-cta"
               class="btn btn-primary"
-              href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#download"
+              data-mac-install="1"
             >
               Download Desktop
             </a>
@@ -346,8 +345,8 @@ Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</s
           </a>
         </div>
         <div class="note-grid">
-          <aside class="note-card">
-            <h3>
+          <aside class="note-card" id="mac-unsigned-note">
+            <h3 id="mac-install">
               <span class="note-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="9" />
@@ -357,8 +356,10 @@ Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</s
               macOS unsigned build
             </h3>
             <p>
-              Phase 1 builds are not Developer ID signed. After install, clear
-              quarantine once:
+              Phase 1 builds of <strong>OTPeer Authenticator</strong> are not
+              Developer ID signed. macOS may say the app is
+              <strong>damaged</strong> — that is Gatekeeper quarantine, not a
+              corrupt download. After install, clear quarantine and open once:
             </p>
             <pre><code>xattr -cr "/Applications/OTPeer Authenticator.app"
 open "/Applications/OTPeer Authenticator.app"</code></pre>
@@ -578,6 +579,63 @@ open "/Applications/OTPeer Authenticator.app"</code></pre>
         </details>
       </section>
     </main>
+
+    <iframe
+      id="otpeer-download-frame"
+      name="otpeer-download"
+      title="Installer download"
+      hidden
+      aria-hidden="true"
+    ></iframe>
+
+    <dialog id="mac-unsigned-dialog" class="mac-dialog" aria-labelledby="mac-dialog-title">
+      <form method="dialog" class="mac-dialog-body">
+        <h2 id="mac-dialog-title">Before you install on macOS</h2>
+        <p>
+          Phase 1 builds of <strong>OTPeer Authenticator</strong> aren’t
+          Apple-signed yet. The first open may say the app is
+          <strong>“damaged”</strong> — that’s Gatekeeper quarantine, not a bad
+          file.
+        </p>
+        <ol class="mac-dialog-steps">
+          <li>
+            Download the installer and drag
+            <strong>OTPeer Authenticator</strong> into Applications.
+          </li>
+          <li>
+            Open Terminal and run these two commands once — they clear quarantine
+            and launch the app:
+          </li>
+        </ol>
+        <pre class="mac-dialog-cmd" id="mac-xattr-cmd" tabindex="0"><code>xattr -cr "/Applications/OTPeer Authenticator.app"
+open "/Applications/OTPeer Authenticator.app"</code></pre>
+        <button type="button" class="btn btn-ghost mac-dialog-copy" id="mac-copy-xattr">
+          Copy commands
+        </button>
+        <p id="mac-dialog-status" class="mac-dialog-status" hidden>
+          Installer downloading. Once done, open the disk image, drag
+          <strong>OTPeer Authenticator</strong> into Applications, then run the
+          commands above.
+        </p>
+        <label class="mac-dialog-ack" for="mac-ack">
+          <input type="checkbox" id="mac-ack" />
+          <span>I understand — quarantine warning, not a corrupt download</span>
+        </label>
+        <div class="mac-dialog-actions">
+          <button type="submit" class="btn btn-secondary" id="mac-dialog-cancel" value="cancel">
+            Close
+          </button>
+          <a
+            id="mac-dialog-download"
+            class="btn btn-primary is-disabled"
+            href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            target="otpeer-download"
+            aria-disabled="true"
+            >Download installer</a
+          >
+        </div>
+      </form>
+    </dialog>
 
     <footer class="site-footer">
       <div class="footer-brand">
