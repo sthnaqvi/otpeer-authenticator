@@ -101,7 +101,7 @@
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
-      <a class="brand" href="/">
+      <a class="brand" href="#top">
         <img src="/assets/mark.png" alt="" width="36" height="36" />
         <span class="brand-text">
           <span class="brand-name">OTPeer</span>
@@ -113,7 +113,12 @@
         <a href="#surfaces">Apps</a>
         <a href="#how">How it works</a>
         <a href="#faq">FAQ</a>
-        <a href="https://github.com/sthnaqvi/otpeer-authenticator">GitHub</a>
+        <a
+          href="https://github.com/sthnaqvi/otpeer-authenticator"
+          target="_blank"
+          rel="noopener noreferrer"
+          >GitHub</a
+        >
       </nav>
     </header>
 
@@ -139,12 +144,14 @@
               id="primary-cta"
               class="btn btn-primary"
               href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Download Desktop
             </a>
             <a class="btn btn-secondary" href="#cli">Install CLI</a>
           </div>
-          <p id="cta-hint" class="cta-hint" hidden></p>
+          <p id="cta-hint" class="cta-hint" aria-live="polite">&nbsp;</p>
         </div>
         <div class="hero-visual" aria-hidden="true">
           <img
@@ -283,18 +290,21 @@ Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</s
         <h2>Download Desktop</h2>
         <p class="section-lede">
           Latest build from
-          <a href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+          <a
+            href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            target="_blank"
+            rel="noopener noreferrer"
             >GitHub Releases</a
           >. Pick your platform if auto-detect is wrong.
         </p>
-        <p id="release-meta" class="release-meta" aria-live="polite">
-          Loading latest release…
-        </p>
+        <p id="release-meta" class="release-meta" aria-live="polite">&nbsp;</p>
         <div class="platform-grid" id="platform-buttons">
           <a
             class="platform-btn"
             data-platform="mac-arm64"
             href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             macOS (Apple Silicon)
           </a>
@@ -302,6 +312,8 @@ Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</s
             class="platform-btn"
             data-platform="mac-x64"
             href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             macOS (Intel)
           </a>
@@ -309,6 +321,8 @@ Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</s
             class="platform-btn"
             data-platform="win"
             href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Windows
           </a>
@@ -316,6 +330,8 @@ Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</s
             class="platform-btn"
             data-platform="linux-appimage"
             href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Linux AppImage
           </a>
@@ -323,6 +339,8 @@ Google     <span class="term-code">019 447</span>  <span class="term-dim">18s</s
             class="platform-btn"
             data-platform="linux-deb"
             href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Linux .deb
           </a>
@@ -359,7 +377,12 @@ open "/Applications/OTPeer Authenticator.app"</code></pre>
               Compare your file's SHA-512 with the value in the checksum
               manifest (<code>latest-mac.yml</code>, <code>latest.yml</code>, or
               <code>latest-linux.yml</code>) on the
-              <a href="https://github.com/sthnaqvi/otpeer-authenticator/releases">release page</a>:
+              <a
+                href="https://github.com/sthnaqvi/otpeer-authenticator/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                >release page</a
+              >:
             </p>
             <pre><code>openssl dgst -sha512 -binary "&lt;downloaded-file&gt;" | base64</code></pre>
           </aside>
@@ -562,10 +585,23 @@ open "/Applications/OTPeer Authenticator.app"</code></pre>
         <span>OTPeer Authenticator</span>
       </div>
       <p class="footer-links">
-        <a href="https://otpeer.com">otpeer.com</a>
-        <a href="https://github.com/sthnaqvi/otpeer-authenticator">GitHub</a>
-        <a href="https://www.npmjs.com/package/authenticator-clui">npm</a>
-        <a href="https://github.com/sthnaqvi/otpeer-authenticator/blob/master/LICENSE"
+        <a href="#top">otpeer.com</a>
+        <a
+          href="https://github.com/sthnaqvi/otpeer-authenticator"
+          target="_blank"
+          rel="noopener noreferrer"
+          >GitHub</a
+        >
+        <a
+          href="https://www.npmjs.com/package/authenticator-clui"
+          target="_blank"
+          rel="noopener noreferrer"
+          >npm</a
+        >
+        <a
+          href="https://github.com/sthnaqvi/otpeer-authenticator/blob/master/LICENSE"
+          target="_blank"
+          rel="noopener noreferrer"
           >MIT License</a
         >
       </p>

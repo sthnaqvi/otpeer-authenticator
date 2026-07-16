@@ -242,6 +242,7 @@ main {
   background: var(--accent);
   color: #fff;
   width: 100%;
+  min-width: 12.5rem;
   box-shadow: 0 8px 24px rgba(75, 139, 214, 0.25);
 }
 
@@ -284,6 +285,8 @@ main {
   margin-top: 0.75rem;
   color: var(--dim);
   font-size: 0.9rem;
+  line-height: 1.4;
+  min-height: 1.4em;
 }
 
 .hero-visual {
@@ -325,13 +328,15 @@ main {
   border-top: 1px solid var(--border);
 }
 
+#top,
 .surfaces,
 .sync,
 .download,
 .why,
 .compare,
 .faq,
-#cli {
+#cli,
+#how {
   scroll-margin-top: 84px;
 }
 
@@ -631,6 +636,8 @@ main {
 .release-meta {
   color: var(--dim);
   font-size: 0.9rem;
+  line-height: 1.4;
+  min-height: 1.4em;
   margin-bottom: 1rem;
 }
 

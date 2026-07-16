@@ -114,6 +114,21 @@ function preferredKey(platform) {
 }
 
 /**
+ * @param {HTMLAnchorElement} el
+ * @param {string} url
+ */
+function setLinkHref(el, url) {
+  el.href = url;
+  if (/^https?:\/\//i.test(url)) {
+    el.target = '_blank';
+    el.rel = 'noopener noreferrer';
+  } else {
+    el.removeAttribute('target');
+    el.removeAttribute('rel');
+  }
+}
+
+/**
  * @param {{ os: string, arch: string, isPhone: boolean }} platform
  * @param {Record<string, string | null>} urls
  * @param {string | null} tag
@@ -125,10 +140,9 @@ function wirePrimaryCta(platform, urls, tag) {
 
   if (platform.isPhone) {
     primary.textContent = 'Mobile app — Coming soon';
-    primary.href = '#surfaces';
+    setLinkHref(primary, '#surfaces');
     primary.classList.add('is-disabled');
     primary.setAttribute('aria-disabled', 'true');
-    hint.hidden = false;
     hint.textContent =
       'Desktop and CLI are available below. The mobile app is not shipping yet.';
     return;
@@ -147,22 +161,19 @@ function wirePrimaryCta(platform, urls, tag) {
 
   if (key && urls[key]) {
     primary.textContent = labels[key] || 'Download Desktop';
-    primary.href = urls[key];
-    hint.hidden = false;
+    setLinkHref(primary, urls[key]);
     hint.textContent = tag
       ? `Latest desktop release: ${tag}`
-      : 'Downloading the matching installer for your system.';
+      : 'Matching installer ready for your system.';
   } else if (platform.os === 'mac') {
     primary.textContent = 'Download Desktop';
-    primary.href = '#download';
-    hint.hidden = false;
+    setLinkHref(primary, '#download');
     hint.textContent = tag
       ? `Latest: ${tag} — pick Apple Silicon or Intel below.`
       : 'Pick Apple Silicon or Intel below.';
   } else {
     primary.textContent = 'Download Desktop';
-    primary.href = RELEASES_PAGE;
-    hint.hidden = false;
+    setLinkHref(primary, RELEASES_PAGE);
     hint.textContent = 'Open GitHub Releases to pick an installer.';
   }
 }
@@ -175,8 +186,8 @@ function wirePlatformButtons(urls, preferred) {
   const buttons = document.querySelectorAll('[data-platform]');
   buttons.forEach((btn) => {
     const key = btn.getAttribute('data-platform');
-    const url = key ? urls[key] : null;
-    btn.href = url || RELEASES_PAGE;
+    const url = (key && urls[key]) || RELEASES_PAGE;
+    setLinkHref(btn, url);
     btn.classList.toggle('is-preferred', Boolean(preferred && key === preferred));
   });
 }
@@ -206,13 +217,20 @@ async function fetchLatestDesktopRelease() {
 async function loadReleases() {
   const meta = document.getElementById('release-meta');
   const platform = await detectPlatform();
-  let urls = {
+  const empty_urls = {
     'mac-arm64': null,
     'mac-x64': null,
     win: null,
     'linux-appimage': null,
     'linux-deb': null,
   };
+
+  // Wire OS-aware UI immediately so the hero does not jump after the API returns.
+  const preferred = preferredKey(platform);
+  wirePrimaryCta(platform, empty_urls, null);
+  wirePlatformButtons(empty_urls, preferred);
+
+  let urls = empty_urls;
   let tag = null;
 
   try {
@@ -233,7 +251,6 @@ async function loadReleases() {
     }
   }
 
-  const preferred = preferredKey(platform);
   wirePrimaryCta(platform, urls, tag);
   wirePlatformButtons(urls, preferred);
 }
