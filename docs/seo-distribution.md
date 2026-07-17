@@ -36,6 +36,64 @@ gets indexed and then ranks nowhere. The two things that move that needle:
 
 Getting indexed was never the blocker. Earning links is.
 
+## The brand-entity gap (2026-07-17)
+
+Confirmed by live SERPs, and more damaging than the link gap alone suggests.
+
+**otpeer.com ranks #1 for `otpeer.com` and for `"otpeer authenticator"
+otpeer.com`.** Indexation is fine. But it does **not** rank for the unquoted
+brand query `otpeer authenticator` — Google returns "OTP Authenticator App",
+Zoho and FreeOTP instead.
+
+**Google does not have an entity for "OTPeer" and resolves it to the nearest
+thing it knows.** Its own AI Overview for `otpeer.com` says:
+
+> "you might be looking for **OtterPeer**"
+> "if you meant **OT peer** ... Occupational Therapy peer support"
+
+A brand-name search failing is abnormal. The cause is structural: a new domain,
+zero inbound links, and a brand name one character from **OTP** — the generic
+acronym of its own category. Google's stemming folds `otpeer` into `otp`.
+
+**Implication: the name is a standing SEO liability.** Not a reason to rename,
+but the search strategy has to account for competing against an acronym rather
+than owning a distinctive term. Every brand mention must be an unambiguous
+`OTPeer`, and links must carry "OTPeer" anchor text, or Google never learns to
+separate the two.
+
+Partial mitigation shipped: `sameAs` (GitHub, npm) on the app plus a `WebSite`
+node with `alternateName`, tying brand + domain + repos into one entity. These
+are weak signals. Only real inbound links move this.
+
+## Rich results are not attainable right now — do not fake them
+
+Verified with Google's Rich Results Test against the live page:
+
+| Schema                | Status                                          |
+| --------------------- | ----------------------------------------------- |
+| `SoftwareApplication` | 1 valid item. Sole issue: **missing `aggregateRating`** |
+| `FAQPage`             | **Not detected at all**                         |
+| `WebSite`             | Entity signal only; no rich result by design    |
+
+Two hard facts:
+
+1. **The `FAQPage` block is dead code.** Google removed FAQ rich results on
+   **7 May 2026**. It renders nothing and the tester does not parse it. Harmless
+   to keep, but do not expect anything from it.
+2. **`SoftwareApplication` renders as a star rating.** No `aggregateRating` or
+   `review` means no rich result — this is exactly why the SERP entry is a plain
+   blue link with no image.
+
+**Do not invent an `aggregateRating`.** It is one field, it would trivially
+produce stars, and it is the textbook spammy-structured-data pattern that earns
+a manual action — on top of publishing ratings from users who do not exist. It
+becomes available honestly once there are real reviews.
+
+Corollary: the `softwareVersion` / `screenshot` / `featureList` enrichment added
+earlier does **not** produce a rich result. It helps entity understanding (which
+feeds the brand gap above), nothing more. Sitelinks and image thumbnails come
+from authority and brand recognition, not markup.
+
 ---
 
 ## DONE — GitHub repo metadata (2026-07-17)
