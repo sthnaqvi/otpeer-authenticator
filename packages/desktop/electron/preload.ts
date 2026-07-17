@@ -5,6 +5,7 @@ import { contextBridge, ipcRenderer, clipboard } from 'electron';
  * bridge — no fs, no crypto, no vault password, no raw account secrets.
  */
 const api = {
+    platform: process.platform,
     status: () => ipcRenderer.invoke('vault:status'),
     unlock: (password: string) => ipcRenderer.invoke('vault:unlock', password),
     lock: () => ipcRenderer.invoke('vault:lock'),
@@ -54,6 +55,7 @@ const api = {
     getSettings: () => ipcRenderer.invoke('settings:get'),
     setSettings: (patch: Record<string, unknown>) => ipcRenderer.invoke('settings:set', patch),
     checkForUpdates: () => ipcRenderer.invoke('updates:check'),
+    openUpdatePage: (currentVersion: string) => ipcRenderer.invoke('app:openUpdatePage', currentVersion),
     appVersion: () => ipcRenderer.invoke('app:version'),
     showAbout: () => ipcRenderer.invoke('app:about'),
     confirm: (options: {

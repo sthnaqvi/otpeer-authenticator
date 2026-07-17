@@ -17,6 +17,7 @@ export interface SyncSummary {
 }
 
 export interface OtpeerApi {
+    platform: NodeJS.Platform;
     status(): Promise<{ exists: boolean; encrypted: boolean; locked: boolean; location?: string; count?: number }>;
     unlock(password: string): Promise<boolean>;
     lock(): Promise<void>;
@@ -48,7 +49,14 @@ export interface OtpeerApi {
     onSyncConfirm(cb: (summary: SyncSummary) => void): void;
     getSettings(): Promise<{ autoUpdate: boolean; autoLockMinutes: number; biometricUnlock: boolean }>;
     setSettings(patch: Record<string, unknown>): Promise<{ autoUpdate: boolean; autoLockMinutes: number; biometricUnlock: boolean }>;
-    checkForUpdates(): Promise<{ status: string; version?: string; message?: string }>;
+    checkForUpdates(): Promise<{
+        status: string;
+        currentVersion?: string;
+        latestVersion?: string;
+        updateAvailable?: boolean;
+        message?: string;
+    }>;
+    openUpdatePage(currentVersion: string): Promise<void>;
     appVersion(): Promise<string>;
     showAbout(): Promise<void>;
     confirm(options: {

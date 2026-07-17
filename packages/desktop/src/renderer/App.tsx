@@ -122,7 +122,18 @@ export function App() {
                         <span /><span /><span />
                     </button>
                     <h1>{is_settings ? 'Settings' : 'Accounts'}</h1>
-                    <span className="header-spacer" />
+                    {is_settings ? (
+                        <button
+                            type="button"
+                            className="icon-btn header-back"
+                            aria-label="Back to accounts"
+                            onClick={() => setDialog(null)}
+                        >
+                            ✕
+                        </button>
+                    ) : (
+                        <span className="header-spacer" />
+                    )}
                 </header>
 
                 {is_settings ? (
@@ -1627,6 +1638,7 @@ function SettingsPanel({ onSetPassword }: { onSetPassword: () => void }) {
     const [settings, setSettings] = useState<{ autoUpdate: boolean; autoLockMinutes: number; biometricUnlock: boolean } | null>(null);
     const [version, setVersion] = useState('');
     const [update_msg, setUpdateMsg] = useState('');
+    const [update_available, setUpdateAvailable] = useState(false);
     const [encrypted, setEncrypted] = useState(false);
     const [biometric, setBiometric] = useState<{ available: boolean; enabled: boolean; label: string } | null>(null);
     const [vault_msg, setVaultMsg] = useState('');
@@ -1686,12 +1698,30 @@ function SettingsPanel({ onSetPassword }: { onSetPassword: () => void }) {
         }
     };
 
+    const is_mac = api.platform === 'darwin';
+
     const checkUpdates = async () => {
         setUpdateMsg('');
+        setUpdateAvailable(false);
         const result = await api.checkForUpdates();
-        setUpdateMsg(result.status === 'ok'
-            ? (result.version ? `Latest: ${result.version}` : 'You are up to date')
-            : `Unavailable (${result.message ?? result.status})`);
+        if (result.status !== 'ok') {
+            setUpdateMsg(`Unavailable (${result.message ?? result.status})`);
+            return;
+        }
+        const current = result.currentVersion ?? version;
+        const latest = result.latestVersion ?? current;
+        if (result.updateAvailable && latest !== current) {
+            setUpdateMsg(is_mac
+                ? `Update available: v${current} → v${latest}`
+                : `Update available: v${current} → v${latest} (downloading automatically)`);
+            setUpdateAvailable(true);
+        } else {
+            setUpdateMsg(`You’re on the latest version (v${current})`);
+        }
+    };
+
+    const downloadUpdate = async () => {
+        await api.openUpdatePage(version);
     };
 
     return (
@@ -1725,9 +1755,16 @@ function SettingsPanel({ onSetPassword }: { onSetPassword: () => void }) {
                         <span className="settings-label">Check for updates now</span>
                         {update_msg && <span className="settings-meta">{update_msg}</span>}
                     </div>
-                    <button type="button" className="settings-action" onClick={() => void checkUpdates()}>
-                        Check now
-                    </button>
+                    <div className="settings-actions">
+                        {update_available && is_mac && (
+                            <button type="button" className="settings-action" onClick={() => void downloadUpdate()}>
+                                Download update
+                            </button>
+                        )}
+                        <button type="button" className="settings-action" onClick={() => void checkUpdates()}>
+                            Check now
+                        </button>
+                    </div>
                 </div>
 
                 <div className="settings-row">

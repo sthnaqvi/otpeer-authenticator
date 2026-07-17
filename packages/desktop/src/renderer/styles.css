@@ -890,6 +890,12 @@ input:focus, textarea:focus { outline: none; border-color: var(--accent); }
   line-height: 1.45;
   color: var(--dim);
 }
+.settings-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+  align-items: center;
+}
 
 .dialog-add {
   width: min(360px, 94vw);
