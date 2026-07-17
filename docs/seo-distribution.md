@@ -2,6 +2,41 @@
 
 Status as of **2026-07-17**.
 
+## Read this first: the domain is one day old
+
+```
+otpeer.com  Creation Date: 2026-07-16T07:19:09Z   (Registrar: Spaceship, Inc.)
+```
+
+Roughly **28 hours old** at the time of writing, with **zero inbound links**
+(confirmed by Google: `Referring page: None detected`).
+
+**This is the answer to "why don't we rank for any keyword".** It is not a
+technical defect, and there is no configuration that fixes it. Verified: 738
+words of clean static HTML, crawl allowed, indexing allowed, canonical correct,
+page indexed, no manual actions. On-page SEO is **done**.
+
+Google ranks on relevance × authority. Relevance is present. Authority is zero.
+Anything × 0 = 0 — which is why the site is absent from page 1 *and* page 40,
+rather than sitting just outside the top 10.
+
+The SERPs being targeted (e.g. `peer to peer sync 2fa authenticator`) are held
+by Google Play, Reddit, Sync.com and Techlore: domains with years of history and
+thousands of referring pages.
+
+**There is no fifth lever.** Links, content depth, brand entity and time are the
+mechanism. Deprioritising them does not slow ranking down; it stops it.
+
+Realistic timeline:
+
+| Query type                              | Expectation                          |
+| --------------------------------------- | ------------------------------------ |
+| `otpeer.com`, `"otpeer authenticator"`  | **Already #1**                       |
+| Brand (`otpeer authenticator`)          | Weeks, as the entity resolves        |
+| Competitive generic (`open source 2fa`) | 6–12+ months **with** sustained links; never without |
+
+Do not re-diagnose this as a technical problem. It has been checked.
+
 ## The actual problem
 
 On-page SEO is essentially done — title, description, canonical, OG/Twitter,
