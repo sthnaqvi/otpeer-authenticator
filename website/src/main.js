@@ -364,7 +364,10 @@ function setupMacUnsignedGate() {
 
 function emphasizeMacInstallNote(isMac) {
   const card = document.getElementById('mac-unsigned-note');
-  if (card instanceof HTMLElement) card.classList.toggle('is-emphasized', isMac);
+  if (!(card instanceof HTMLElement)) return;
+  // The Gatekeeper quarantine instructions only apply to macOS installs.
+  card.hidden = !isMac;
+  card.classList.toggle('is-emphasized', isMac);
 }
 
 /**
