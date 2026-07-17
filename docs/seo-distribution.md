@@ -8,19 +8,33 @@ On-page SEO is essentially done — title, description, canonical, OG/Twitter,
 `SoftwareApplication` + `FAQPage` JSON-LD, sitemap, robots, static prerendered
 HTML. None of that is the bottleneck.
 
-`site:otpeer.com` returned **zero results** when this work started. The site went
-live 2026-07-16 and was invisible for three reasons, in priority order:
+**The site is not an indexation problem. It is a links problem.**
 
-1. **No inbound links.** Google discovers new sites by following links. The
-   GitHub repo — the highest-authority page in our control — set no homepage, no
-   topics, and carried a stale description. npm was the only link to otpeer.com
-   anywhere. **Fixed 2026-07-17, see below.**
+That correction matters, because it was diagnosed wrong at first. `site:otpeer.com`
+returned zero results, which looked like the page was unindexed. It was not.
+Search Console, once connected, showed the truth:
+
+- **Page is indexed**, `URL is on Google`.
+- **Last crawl: 17 Jul 2026, 02:18:15** — Googlebot smartphone, fetch
+  successful. That crawl predates any of this work.
+- **Discovery: `https://otpeer.com/sitemap.xml`** — Google found the sitemap on
+  its own via the `Sitemap:` line in `robots.txt`. No Search Console needed.
+- **Referring page: `None detected`.**
+
+The lesson: `site:` is unreliable for brand-new domains and is not evidence of
+non-indexation. Trust Search Console's URL Inspection instead.
+
+So the real problem is the last line. Google has the page and has **zero
+referring pages to it**. A page with no inbound links has no authority, so it
+gets indexed and then ranks nowhere. The two things that move that needle:
+
+1. **Inbound links.** The GitHub repo — the highest-authority page in our
+   control — set no homepage, no topics, and carried a stale description. npm
+   was the only link to otpeer.com anywhere. **Fixed 2026-07-17, see below.**
 2. **One URL, one keyword target.** A single page realistically ranks for one
    cluster. Deliberately accepted for now; revisit if traffic plateaus.
-3. **Nothing submitted anywhere.** No Search Console, no Bing, no directories.
-   **Still open — now the top priority.**
 
-Nothing below matters until the site is indexed.
+Getting indexed was never the blocker. Earning links is.
 
 ---
 
@@ -58,20 +72,36 @@ curl -sS https://api.github.com/repos/sthnaqvi/otpeer-authenticator \
 
 ---
 
-## 1. Get indexed — now the top priority
+## DONE — Google Search Console (2026-07-17)
 
-Both require account access — yours to do.
+Property is live and verified. This did not "fix indexing" — the page was
+already indexed (see above). What it bought is **visibility**: crawl status,
+the `Referring page: None detected` finding, and Performance data once
+impressions accumulate.
 
-- **Google Search Console** (https://search.google.com/search-console) — add
-  `otpeer.com`, verify via DNS TXT or by dropping an HTML file in
-  `website/public/`. Then submit `https://otpeer.com/sitemap.xml` and use
-  **URL Inspection → Request Indexing** on `https://otpeer.com/`. This is the
-  fastest path from zero to indexed.
-- **Bing Webmaster Tools** (https://www.bing.com/webmasters) — can import
-  directly from Search Console. Feeds Bing, DuckDuckGo, and increasingly
-  ChatGPT-style answers.
+- **Property type: URL prefix** (`https://otpeer.com/`). Domain-property was
+  rejected as an option because it needs DNS TXT and the domain is on
+  Cloudflare, which we don't have access to here. URL prefix supports the
+  HTML-tag method instead.
+- **Verification: HTML tag.** The token lives in `website/index.html` as
+  `<meta name="google-site-verification" content="_TMGZqyeVCAubNIDRv6UvjhPGVlGdCwVkMmpeQrKTfQ" />`.
+  **Do not remove that tag** — verification is revoked with it, and Search
+  Console access goes away. It is deliberately a single line: multi-line meta
+  attributes are valid HTML but Google's verifier is less forgiving.
+- **Sitemap submitted** — `sitemap.xml`, 1 page discovered.
+- **Request Indexing** submitted for `https://otpeer.com/` to pull in the
+  enriched JSON-LD.
 
-## 2. Homebrew — the real Mac discovery channel
+Worth adding a second verification method (Settings → Ownership verification)
+so a future edit to `index.html` cannot silently drop the property.
+
+### Still open — Bing
+
+**Bing Webmaster Tools** (https://www.bing.com/webmasters) — can import directly
+from Search Console now that GSC is verified, which makes this a few clicks.
+Feeds Bing, DuckDuckGo, and increasingly ChatGPT-style answers.
+
+## 1. Homebrew — the real Mac discovery channel
 
 The Mac app cannot do App Store Optimization: it is unsigned and not on the App
 Store. Homebrew is the substitute.
@@ -80,7 +110,7 @@ Cask is written and validated at `homebrew-tap/Casks/otpeer-authenticator.rb`.
 See `homebrew-tap/README.md` for publishing steps and the notability explanation
 (homebrew/cask needs 75+ stars; the personal tap needs nothing).
 
-## 3. Directory + community submissions
+## 2. Directory + community submissions
 
 Draft copy below. **None of these have been submitted** — each is a public post
 under your name and should go out when you decide, not automatically.
@@ -188,12 +218,20 @@ and stars are what unlock homebrew/cask.
 
 - **GitHub repo metadata** — homepage, description, 20 topics. Live and
   API-verified. See the DONE section above.
-- `website/index.html` — enriched `SoftwareApplication` JSON-LD with
-  `softwareVersion`, `screenshot`, `featureList`, `applicationSubCategory`,
-  `isAccessibleForFree`; added `og:locale` and `og:image:alt`; added
-  `fetchpriority="high"` to the LCP hero image.
+- **Google Search Console** — property verified, sitemap submitted, indexing
+  requested. See the DONE section above.
+- `website/index.html` — added the Search Console verification meta tag;
+  enriched `SoftwareApplication` JSON-LD with `softwareVersion`, `screenshot`,
+  `featureList`, `applicationSubCategory`, `isAccessibleForFree`; added
+  `og:locale` and `og:image:alt`; added `fetchpriority="high"` to the LCP hero
+  image.
 - `homebrew-tap/` — validated cask + publishing README.
 - This document.
+
+Deployment note: `website.yml` only fires on pushes to `master` touching
+`website/**`, so the verification tag needed a real push to go live. The tag was
+confirmed serving on otpeer.com (~30s after push) *before* Verify was clicked —
+clicking early just fails the check.
 
 ## Keeping this doc honest
 
@@ -203,15 +241,20 @@ rather than deleting it — the values are what let the next person confirm the
 step still holds without redoing the research.
 
 Deliberately **not** changed: no new pages were added, capping the ranking
-ceiling to roughly one keyword cluster. If traffic stalls after indexation, the
-highest-value next step is splitting the existing comparison table and FAQ into
-their own URLs (`/vs/google-authenticator`, `/vs/authy`, `/mac`,
-`/import/google-authenticator`) — the content is already written, it just needs
-addressable URLs.
+ceiling to roughly one keyword cluster. Now that indexation is confirmed as a
+non-issue, this is the binding constraint alongside links. The highest-value
+next step is splitting the existing comparison table and FAQ into their own URLs
+(`/vs/google-authenticator`, `/vs/authy`, `/mac`, `/import/google-authenticator`)
+— the content is already written, it just needs addressable URLs.
 
 ## Known gaps
 
+- **Zero referring pages.** Confirmed by Google, not inferred. The repo homepage
+  link is new as of 2026-07-17 and postdates the last crawl, so it has not been
+  counted yet. Everything in section 2 exists to fix this.
 - `website/public/sitemap.xml` has a hardcoded `lastmod` (`2026-07-16`) that
   will drift. Only worth automating once there is more than one URL.
 - The unsigned macOS build costs real conversions and forces the
   `--no-quarantine` caveat. Developer ID signing (~$99/yr) is the fix.
+- Search Console has a **single** verification method (HTML tag). Removing that
+  meta tag from `index.html` silently revokes access.
