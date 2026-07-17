@@ -138,16 +138,33 @@ Requirements: Node.js ≥ 14, npm ≥ 7 (for workspaces support).
 ```bash
 git clone https://github.com/sthnaqvi/otpeer-authenticator.git
 cd otpeer-authenticator
-npm install        # installs all workspace deps, links core into cli
-npm run build      # compiles core (tsc) + vendors it into packages/cli
+npm install        # installs all workspace deps (repo root only)
+npm start          # lists available surface commands — does not launch an app
 ```
 
-`npm run build` at the root does two things, in order:
+Run a surface from the repo root:
+
+| Command | What it does |
+|---|---|
+| `npm run desktop` | Build and launch the Electron desktop app |
+| `npm run cli -- …` | Run the CLI (e.g. `npm run cli -- --help`) |
+| `npm run website` | Start the otpeer.com landing page dev server |
+| `npm run mobile` | Mobile app (not implemented yet) |
+| `npm run build` | Build shared core and vendor into CLI + desktop |
+| `npm test` | Run core test suite |
+
+`npm run build` at the root does three things, in order:
 
 1. `packages/core`: TypeScript → `packages/core/dist/`
 2. `packages/cli`: copies `core/dist` → `packages/cli/vendor/core`
+3. `packages/desktop`: copies `core/dist` → `packages/desktop/vendor/core`
 
-Both output directories are gitignored; they're always regenerated.
+Output directories are gitignored; they're regenerated on build. Desktop and CLI
+`start` scripts also rebuild core automatically when `dist` is missing.
+
+**Do not** run `npm install` inside `packages/desktop` or `packages/cli` — use
+the monorepo root. Inside a package, `npm start` still works when you are already
+there (e.g. `cd packages/desktop && npm start` launches desktop only).
 
 ## Desktop releases
 
@@ -189,16 +206,20 @@ When you have an Apple Developer account, we can add CI signing + notarization s
 3. Tag and push: `git tag desktop-v0.1.0 && git push origin desktop-v0.1.0`
 4. Wait for the **Desktop release** workflow; assets appear on the Releases page.
 
-Local Mac-only packaging: `cd packages/desktop && npm run dist`.
+Local Mac-only packaging: `npm run desktop` then `cd packages/desktop && npm run dist`,
+or from root after a desktop build: `cd packages/desktop && npm run dist`.
 
 ## Running the CLI from a checkout
 
+From the repo root:
+
 ```bash
-cd packages/cli
-node bin.js --help
-node bin.js --import "otpauth-migration://offline?data=..."
-node bin.js --run
+npm run cli -- --help
+npm run cli -- --import "otpauth-migration://offline?data=..."
+npm run cli -- --run
 ```
+
+Or from `packages/cli`: `node bin.js --help` (same entry point).
 
 The vault is written to `~/.authenticator-clui/accounts.json` — same
 location as an installed copy, so be aware they share state.
