@@ -629,15 +629,16 @@ open "/Applications/OTPeer Authenticator.app"</code></pre>
 
     <dialog id="mac-unsigned-dialog" class="mac-dialog" aria-labelledby="mac-dialog-title">
       <form method="dialog" class="mac-dialog-body">
+        <p id="mac-dialog-version" class="mac-dialog-version" hidden></p>
         <h2 id="mac-dialog-title">Before you install on macOS</h2>
-        <p>
+        <p id="mac-dialog-intro">
           Phase 1 builds of <strong>OTPeer Authenticator</strong> aren’t
           Apple-signed yet. The first open may say the app is
           <strong>“damaged”</strong> — that’s Gatekeeper quarantine, not a bad
           file.
         </p>
         <ol class="mac-dialog-steps">
-          <li>
+          <li id="mac-dialog-step-1">
             Download the installer and drag
             <strong>OTPeer Authenticator</strong> into Applications.
           </li>

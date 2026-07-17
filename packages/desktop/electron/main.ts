@@ -1,7 +1,7 @@
 import {
     app, BrowserWindow, ipcMain, dialog, powerMonitor, session,
     Tray, Menu, nativeImage, shell, safeStorage, systemPreferences,
-    desktopCapturer,
+    desktopCapturer, Notification,
 } from 'electron';
 import path from 'path';
 import fs from 'fs';
@@ -240,15 +240,19 @@ function createWindow(): void {
 // ---------------------------------------------------------------- about / menus
 
 function showAbout(): void {
+    // Keep each line short — native macOS About boxes center-align detail and soft-wrap mid-phrase.
     const detail = [
         `Version ${app.getVersion()}`,
-        'Two-factor codes with serverless peer-to-peer sync.',
-        '',
         'MIT License',
         'Author: Sayed Tauseef Naqvi',
         '',
-        'Vault shared with the auth CLI.',
-        'No telemetry. Update checks (optional) contact GitHub Releases only.',
+        '2FA serverless peer-to-peer sync',
+        'Vault shared with the auth CLI',
+        '',
+        'No telemetry',
+        'Update checks use',
+        'GitHub Releases only',
+        'Sync is always started by you',
     ].join('\n');
 
     const options: Electron.MessageBoxOptions = {
@@ -641,14 +645,64 @@ function registerIpc(): void {
     ipcMain.handle('updates:check', async () => {
         if (process.env.OTPEER_DISABLE_UPDATER) return { status: 'disabled-by-build' };
         try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const { autoUpdater } = require('electron-updater');
-            const result = await autoUpdater.checkForUpdates();
-            return { status: 'ok', version: result?.updateInfo?.version };
+            const { currentVersion, latestVersion, updateAvailable } = await runUpdateCheck();
+            return { status: 'ok', currentVersion, latestVersion, updateAvailable };
         } catch (error) {
-            return { status: 'error', message: (error as Error).message };
+            return { status: 'error', message: (error as Error).message, currentVersion: app.getVersion() };
         }
     });
+    ipcMain.handle('app:openUpdatePage', (_e, currentVersion: string) => {
+        void shell.openExternal(buildUpdatePageUrl(currentVersion));
+    });
+}
+
+const UPDATE_SITE_ORIGIN = 'https://otpeer.com';
+
+function buildUpdatePageUrl(currentVersion: string): string {
+    const params = new URLSearchParams({ update: '1', current: currentVersion });
+    return `${UPDATE_SITE_ORIGIN}/?${params.toString()}#download`;
+}
+
+interface UpdateCheckResult {
+    currentVersion: string;
+    latestVersion: string;
+    updateAvailable: boolean;
+}
+
+/**
+ * macOS builds are unsigned (Phase 1) — Squirrel.Mac can't auto-install, so
+ * autoDownload stays off there and users are pointed to the website instead.
+ * Windows/Linux keep electron-updater's own background download.
+ */
+async function runUpdateCheck(): Promise<UpdateCheckResult> {
+    const currentVersion = app.getVersion();
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { autoUpdater } = require('electron-updater');
+    autoUpdater.autoDownload = process.platform !== 'darwin';
+    const result = await autoUpdater.checkForUpdates();
+    const latestVersion = result?.updateInfo?.version ?? currentVersion;
+    const updateAvailable = Boolean(result?.isUpdateAvailable);
+    return { currentVersion, latestVersion, updateAvailable };
+}
+
+/** Mac-only: notify-and-redirect-to-website. Never downloads or auto-installs. */
+async function checkForUpdatesAndNotifyMac(): Promise<void> {
+    if (process.env.OTPEER_DISABLE_UPDATER) return;
+    try {
+        const { currentVersion, latestVersion, updateAvailable } = await runUpdateCheck();
+        if (!updateAvailable) return;
+        const url = buildUpdatePageUrl(currentVersion);
+        if (Notification.isSupported()) {
+            const notification = new Notification({
+                title: 'Update available',
+                body: `OTPeer Authenticator ${latestVersion} is available (you have ${currentVersion}).`,
+            });
+            notification.on('click', () => { void shell.openExternal(url); });
+            notification.show();
+        }
+    } catch {
+        // updater unavailable (dev build)
+    }
 }
 
 // ---------------------------------------------------------------- app
@@ -664,6 +718,10 @@ if (process.platform === 'darwin' && app.dock) {
     if (!dockIcon.isEmpty()) app.dock.setIcon(dockIcon);
 }
 
+// Spotlight: unsigned / quarantined Mac installs may never register with Launch Services,
+// so Spotlight might not find "OTPeer Authenticator" even after copy to /Applications.
+// Lasting fix: Developer ID signing + notarization (Stage F). Manual recovery:
+// lsregister -f on the .app bundle; search Spotlight for "OTPeer".
 app.whenReady().then(() => {
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
         callback({
@@ -689,12 +747,17 @@ app.whenReady().then(() => {
     powerMonitor.on('suspend', lockNow);
 
     if (!process.env.OTPEER_DISABLE_UPDATER && loadSettings().autoUpdate) {
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const { autoUpdater } = require('electron-updater');
-            autoUpdater.checkForUpdatesAndNotify().catch(() => undefined);
-        } catch {
-            // updater unavailable (dev build)
+        if (process.platform === 'darwin') {
+            void checkForUpdatesAndNotifyMac();
+        } else {
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-var-requires
+                const { autoUpdater } = require('electron-updater');
+                autoUpdater.autoDownload = true;
+                autoUpdater.checkForUpdatesAndNotify().catch(() => undefined);
+            } catch {
+                // updater unavailable (dev build)
+            }
         }
     }
 

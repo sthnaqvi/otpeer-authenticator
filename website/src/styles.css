@@ -752,6 +752,13 @@ main {
   line-height: 1.25;
 }
 
+.mac-dialog-version {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
 .mac-dialog-body > p {
   margin: 0;
   color: #c8cdd2;

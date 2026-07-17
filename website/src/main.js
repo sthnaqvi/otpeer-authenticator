@@ -114,6 +114,92 @@ function preferredKey(platform) {
 }
 
 let pending_mac_dmg_url = RELEASES_PAGE;
+/** Latest desktop-v* tag from GitHub — used only for the Mac Gatekeeper dialog. */
+let latest_desktop_tag = null;
+
+/**
+ * @returns {{ isUpdate: boolean, current: string }}
+ */
+function parseUpdateQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const update = params.get('update');
+  return {
+    isUpdate: update === '1' || update === 'true',
+    current: params.get('current') || '',
+  };
+}
+
+const update_ctx = parseUpdateQuery();
+
+/**
+ * @param {string | null} tag
+ */
+function stripDesktopTag(tag) {
+  if (!tag) return '';
+  return tag.startsWith('desktop-v') ? tag.slice('desktop-v'.length) : tag;
+}
+
+/**
+ * @param {string | null} latestTag
+ */
+function applyMacDialogCopy(latestTag) {
+  const title = document.getElementById('mac-dialog-title');
+  const intro = document.getElementById('mac-dialog-intro');
+  const step1 = document.getElementById('mac-dialog-step-1');
+  const version_line = document.getElementById('mac-dialog-version');
+  const download = document.getElementById('mac-dialog-download');
+  const status = document.getElementById('mac-dialog-status');
+  if (!(title instanceof HTMLElement) || !(intro instanceof HTMLElement)) return;
+
+  const latest_ver = stripDesktopTag(latestTag);
+  const current_ver = update_ctx.current;
+
+  if (update_ctx.isUpdate) {
+    if (version_line instanceof HTMLElement) {
+      if (current_ver && latest_ver) {
+        version_line.textContent = `You’re on v${current_ver} → Latest v${latest_ver}`;
+        version_line.hidden = false;
+      } else if (current_ver) {
+        version_line.textContent = `You’re on v${current_ver}`;
+        version_line.hidden = false;
+      } else if (latest_ver) {
+        version_line.textContent = `Latest v${latest_ver}`;
+        version_line.hidden = false;
+      } else {
+        version_line.hidden = true;
+      }
+    }
+    title.textContent = 'Update OTPeer Authenticator';
+    intro.innerHTML =
+      'Download the new build and replace <strong>OTPeer Authenticator</strong> in Applications. '
+      + 'Phase 1 builds aren’t Apple-signed yet — Gatekeeper may warn until you clear quarantine once.';
+    if (step1 instanceof HTMLElement) {
+      step1.innerHTML =
+        'Download the update and replace <strong>OTPeer Authenticator</strong> in Applications.';
+    }
+    if (download instanceof HTMLAnchorElement) download.textContent = 'Download update';
+    if (status instanceof HTMLElement) {
+      status.innerHTML =
+        'Update downloading. Open the disk image, replace the app in Applications, then run the commands below if macOS blocks the new build.';
+    }
+    return;
+  }
+
+  if (version_line instanceof HTMLElement) version_line.hidden = true;
+  title.textContent = 'Before you install on macOS';
+  intro.innerHTML =
+    'Phase 1 builds of <strong>OTPeer Authenticator</strong> aren’t Apple-signed yet. '
+    + 'The first open may say the app is <strong>“damaged”</strong> — that’s Gatekeeper quarantine, not a bad file.';
+  if (step1 instanceof HTMLElement) {
+    step1.innerHTML =
+      'Download the installer and drag <strong>OTPeer Authenticator</strong> into Applications.';
+  }
+  if (download instanceof HTMLAnchorElement) download.textContent = 'Download installer';
+  if (status instanceof HTMLElement) {
+    status.innerHTML =
+      'Installer downloading. Once done, open the disk image, drag <strong>OTPeer Authenticator</strong> into Applications, then run the commands above.';
+  }
+}
 
 /**
  * @param {HTMLAnchorElement} el
@@ -191,10 +277,11 @@ function openMacUnsignedDialog(downloadUrl) {
     startInstallerDownload(downloadUrl);
     return;
   }
+  // Dialog is Mac-only — apply install vs update copy here, not on every page load.
+  applyMacDialogCopy(latest_desktop_tag);
   pending_mac_dmg_url = downloadUrl;
   download.href = downloadUrl;
   download.target = 'otpeer-download';
-  download.textContent = 'Download installer';
   if (ack instanceof HTMLInputElement) ack.checked = false;
   if (status instanceof HTMLElement) status.hidden = true;
   if (copyBtn) copyBtn.textContent = 'Copy commands';
@@ -257,8 +344,6 @@ function setupMacUnsignedGate() {
         event.preventDefault();
         return;
       }
-      // Native navigation into #otpeer-download-frame starts the .dmg download
-      // without opening a blank tab or unloading this page.
       download.textContent = 'Download started';
       if (status instanceof HTMLElement) status.hidden = false;
     });
@@ -417,6 +502,31 @@ async function loadReleases() {
 
   wirePrimaryCta(platform, urls, tag);
   wirePlatformButtons(urls, preferred);
+  latest_desktop_tag = tag;
+  maybeOpenUpdateFlow(platform, urls);
+}
+
+/**
+ * @param {{ os: string, arch: string, isPhone: boolean }} platform
+ * @param {Record<string, string | null>} urls
+ */
+function maybeOpenUpdateFlow(platform, urls) {
+  if (!update_ctx.isUpdate) return;
+  const download_section = document.getElementById('download');
+  if (download_section) download_section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (platform.isPhone) return;
+
+  // Mac builds are unsigned, so updates route through this manual dialog.
+  // Windows/Linux auto-update natively — this link only exists as a manual
+  // fallback there, so just scroll to the (already-wired, fallback-safe)
+  // download buttons instead of auto-opening a new tab, which popup
+  // blockers would suppress anyway since this runs without a user gesture.
+  if (platform.os === 'mac') {
+    const key = preferredKey(platform);
+    const dmg = (key && urls[key]) || urls['mac-arm64'] || urls['mac-x64'] || RELEASES_PAGE;
+    openMacUnsignedDialog(dmg);
+  }
 }
 
 function setupCopyCli() {
