@@ -6,17 +6,51 @@ homebrew/cask's notability bar. Everything in this directory is validated but
 
 ## Why a personal tap and not homebrew/cask
 
-homebrew/cask only accepts software that meets its
-[notability requirements](https://docs.brew.sh/Acceptable-Casks#rejected-casks):
-**75+ stars, 30+ forks, or 30+ watchers**. The repo currently has 0 stars, so a
-PR to homebrew/cask would be closed without review. A personal tap has no such
-gate and gives users a real `brew install` today.
+Getting into homebrew/cask is what would allow a bare
+`brew install otpeer-authenticator` with no `brew tap` step. Two independent
+things currently block that, per
+[Acceptable Casks](https://docs.brew.sh/Acceptable-Casks):
 
-This is the *only* reason a tap is involved at all. It is a notability
-workaround, not a Homebrew requirement.
+### 1. Notability — 225 stars, not 75
 
-Once the repo clears 75 stars, the same cask file can be submitted to
-homebrew/cask with only the header changed.
+The commonly-cited bar is 30 forks / 30 watchers / 75 stars. **That is the
+threshold for third-party submissions.** For **self-submitted** casks — where
+the submitter owns the repo, which is our case — the requirement is tripled:
+
+> under 90 forks, 90 watchers, 225 stars
+
+The repo has 0 stars. The real gap is **225**.
+
+### 2. The build fails Gatekeeper — and stars will not fix this
+
+Acceptable Casks lists apps that *"fail with GateKeeper enabled"* as a rejection
+reason. The DMG is `adhoc, linker-signed` (verified via `codesign -dv`), i.e.
+unsigned. The `--no-quarantine` caveat this cask ships is the exact symptom
+they reject.
+
+**This blocker is independent of popularity.** At 225 stars with an unsigned
+build, the PR still gets closed. Developer ID signing + notarization is
+mandatory before homebrew/cask is even worth attempting — and it is actionable
+now, unlike the star count.
+
+### Not an escape hatch: homebrew/core
+
+[Acceptable Formulae](https://docs.brew.sh/Acceptable-Formulae) is explicit:
+
+> Don't make your formula build an `.app` (native macOS Application); we don't
+> want those things in Homebrew.
+
+That rules out the Electron desktop app, and core applies the same 225-star
+self-submission bar.
+
+### So: the tap
+
+A personal tap has no notability gate and no signing gate, and gives users a
+real `brew install` today at the cost of a one-time `brew tap`. It is a
+workaround for the two blockers above, not a Homebrew requirement.
+
+Once the app is signed **and** the repo clears 225 stars, the same cask file can
+go to homebrew/cask with only the header changed.
 
 ## Publishing the tap
 

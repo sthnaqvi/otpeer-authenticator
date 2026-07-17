@@ -107,8 +107,26 @@ The Mac app cannot do App Store Optimization: it is unsigned and not on the App
 Store. Homebrew is the substitute.
 
 Cask is written and validated at `homebrew-tap/Casks/otpeer-authenticator.rb`.
-See `homebrew-tap/README.md` for publishing steps and the notability explanation
-(homebrew/cask needs 75+ stars; the personal tap needs nothing).
+See `homebrew-tap/README.md` for publishing steps and the full rationale.
+
+**The goal is a bare `brew install otpeer-authenticator` with no `brew tap`
+step. That requires homebrew/cask, and two things block it:**
+
+1. **225 stars, not 75.** The widely-quoted 30 forks / 30 watchers / 75 stars is
+   the *third-party* submission bar. Self-submitted casks (we own the repo) are
+   tripled: **90 forks / 90 watchers / 225 stars**. Currently 0.
+2. **The build fails Gatekeeper.** Acceptable Casks rejects apps that "fail with
+   GateKeeper enabled". The DMG is `adhoc, linker-signed`. **Stars do not fix
+   this** — an unsigned build is rejected at any star count.
+
+homebrew/core is not an alternative: it explicitly refuses `.app` bundles, and
+carries the same 225-star self-submission bar.
+
+**Signing is therefore the gating item and the one that is actionable today.**
+It is not just a Homebrew unlock — it also removes the "damaged app" warning
+currently costing installs, and lets the cask drop `--no-quarantine`.
+
+Until then the tap is the only route, and it costs users a one-time `brew tap`.
 
 ## 2. Directory + community submissions
 
@@ -254,7 +272,10 @@ next step is splitting the existing comparison table and FAQ into their own URLs
   counted yet. Everything in section 2 exists to fix this.
 - `website/public/sitemap.xml` has a hardcoded `lastmod` (`2026-07-16`) that
   will drift. Only worth automating once there is more than one URL.
-- The unsigned macOS build costs real conversions and forces the
-  `--no-quarantine` caveat. Developer ID signing (~$99/yr) is the fix.
+- **The unsigned macOS build is the highest-value fix on this list.** It costs
+  real conversions via the "damaged app" warning, forces the `--no-quarantine`
+  caveat, blocks `auto_updates` (Squirrel.Mac cannot update an unsigned bundle),
+  and independently disqualifies the cask from homebrew/cask regardless of star
+  count. Developer ID signing + notarization (~$99/yr) fixes all four at once.
 - Search Console has a **single** verification method (HTML tag). Removing that
   meta tag from `index.html` silently revokes access.
