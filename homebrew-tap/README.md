@@ -12,27 +12,60 @@ homebrew/cask only accepts software that meets its
 PR to homebrew/cask would be closed without review. A personal tap has no such
 gate and gives users a real `brew install` today.
 
+This is the *only* reason a tap is involved at all. It is a notability
+workaround, not a Homebrew requirement.
+
 Once the repo clears 75 stars, the same cask file can be submitted to
 homebrew/cask with only the header changed.
 
 ## Publishing the tap
 
-Homebrew resolves `sthnaqvi/otpeer` to the GitHub repo
-`sthnaqvi/homebrew-otpeer` — the `homebrew-` prefix is required.
+**A separate repo is not strictly required.** The real requirement is that the
+cask lives at **`Casks/` in the tap repo's root**. `brew tap user/repo` is only
+a shortcut that expands to `https://github.com/user/homebrew-repo`; the
+two-argument form `brew tap user/repo <URL>` taps any git URL and makes no such
+assumption.
 
-1. Create a public repo named **`homebrew-otpeer`** under the `sthnaqvi` account.
-2. Copy `Casks/otpeer-authenticator.rb` into `Casks/` at that repo's root.
+Verified locally, both cases tapped by `file://` URL:
+
+| Cask path in repo      | Result                               |
+| ---------------------- | ------------------------------------ |
+| `homebrew-tap/Casks/`  | Tapped, but **0 casks found**        |
+| `Casks/` (repo root)   | **"Tapped 1 cask"**, `brew info` OK  |
+
+So the directory location is what matters, not the repo count. Two options:
+
+### Option A — dedicated repo (recommended)
+
+1. Create a public repo named **`homebrew-otpeer`** under `sthnaqvi`.
+2. Copy `Casks/otpeer-authenticator.rb` to `Casks/` at that repo's root.
 3. Commit and push to the default branch.
-
-Users then install with:
 
 ```sh
 brew tap sthnaqvi/otpeer
 brew install --cask --no-quarantine otpeer-authenticator
 ```
 
-`--no-quarantine` is needed because the build is not Developer ID signed. See
-the cask's `caveats` for the alternative `xattr -cr` route.
+Preferred because the tap stays ~10KB, only changes on releases, and the short
+`brew tap sthnaqvi/otpeer` is a command you can put on the website and in a
+Show HN post without it looking like a workaround.
+
+### Option B — reuse this repo
+
+Move the cask to `Casks/otpeer-authenticator.rb` at the **root** of
+`otpeer-authenticator` (not under `homebrew-tap/`, which Homebrew ignores).
+
+```sh
+brew tap sthnaqvi/otpeer https://github.com/sthnaqvi/otpeer-authenticator
+brew install --cask --no-quarantine otpeer-authenticator
+```
+
+No new repo, but Homebrew clones the whole tap: every user pulls **~20MB** of
+monorepo instead of ~10KB, and `brew update` re-fetches on every commit to
+`master` rather than only on releases.
+
+`--no-quarantine` is needed either way because the build is not Developer ID
+signed. See the cask's `caveats` for the alternative `xattr -cr` route.
 
 ## Verification already performed
 
