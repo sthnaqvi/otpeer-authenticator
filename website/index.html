@@ -8,6 +8,7 @@
       content="OTPeer Authenticator — free open-source 2FA app with serverless peer-to-peer sync. TOTP two-factor authentication codes stay on your devices: no cloud, no account, no telemetry. For macOS, Windows, and Linux."
     />
     <meta name="theme-color" content="#121212" />
+    <meta name="google-site-verification" content="_TMGZqyeVCAubNIDRv6UvjhPGVlGdCwVkMmpeQrKTfQ" />
     <link rel="canonical" href="https://otpeer.com/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="OTPeer Authenticator" />
@@ -17,6 +18,8 @@
       content="Free open-source 2FA authenticator with serverless peer-to-peer sync. Your codes never leave your devices — no cloud, no account, no telemetry."
     />
     <meta property="og:url" content="https://otpeer.com/" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:image:alt" content="OTPeer Authenticator — open-source 2FA with peer-to-peer sync" />
     <meta property="og:image" content="https://otpeer.com/assets/social-card.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -41,7 +44,22 @@
         "image": "https://otpeer.com/assets/social-card.png",
         "description": "Free open-source 2FA (TOTP) authenticator app with serverless peer-to-peer sync. Two-factor authentication codes stay on your devices — no cloud, no account, no telemetry.",
         "applicationCategory": "SecurityApplication",
-        "operatingSystem": "macOS, Windows, Linux",
+        "applicationSubCategory": "Two-Factor Authentication",
+        "operatingSystem": "macOS 12+, Windows, Linux",
+        "softwareVersion": "0.1.1",
+        "screenshot": [
+          "https://otpeer.com/assets/screenshot-accounts.png",
+          "https://otpeer.com/assets/screenshot-unlock.png",
+          "https://otpeer.com/assets/screenshot-sync.png"
+        ],
+        "featureList": [
+          "TOTP two-factor authentication codes",
+          "Serverless peer-to-peer sync over your local network",
+          "AES-encrypted local vault",
+          "Import from Google Authenticator, Microsoft Authenticator, Facebook, Aegis, 2FAS, and andOTP",
+          "Desktop apps for macOS, Windows, and Linux plus a terminal CLI"
+        ],
+        "isAccessibleForFree": true,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
         "license": "https://github.com/sthnaqvi/otpeer-authenticator/blob/master/LICENSE",
         "downloadUrl": "https://github.com/sthnaqvi/otpeer-authenticator/releases",
@@ -167,6 +185,7 @@
             class="hero-shot hero-shot-front"
             width="400"
             height="680"
+            fetchpriority="high"
           />
         </div>
       </section>
