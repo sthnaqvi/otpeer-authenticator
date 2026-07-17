@@ -140,6 +140,23 @@ img {
   color: var(--fg);
 }
 
+@media (max-width: 639px) {
+  /* Below this width the 5 nav links don't fit beside the brand on one row.
+     Without this, .nav wraps to two lines while .site-header still centers
+     it against the single-line .brand, so the wrapped lines visually
+     straddle the logo instead of stacking under it. */
+  .site-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .nav {
+    justify-content: center;
+  }
+}
+
 main {
   max-width: var(--max);
   margin: 0 auto;
@@ -151,6 +168,13 @@ main {
   gap: 2.5rem;
   padding: 2.5rem 0 3rem;
   align-items: center;
+}
+
+.hero-copy {
+  /* Grid items default to min-width: auto — without this, .cta-hint's
+     white-space: nowrap content stretches this (and the page) wider than
+     the viewport instead of ellipsizing within the available width. */
+  min-width: 0;
 }
 
 .eyebrow {
@@ -367,6 +391,10 @@ main {
 .surface {
   display: flex;
   flex-direction: column;
+  /* Grid items default to min-width: auto — without this, the terminal
+     mockup's long command line forces this card (and the page) wider than
+     the viewport instead of scrolling within .term-body's own overflow-x. */
+  min-width: 0;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -688,6 +716,13 @@ main {
   margin-top: 1.75rem;
 }
 
+/* Non-mac visitors: #mac-unsigned-note is hidden via JS, so the remaining
+   card shouldn't sit alone in a two-column grid with dangling empty space.
+   [hidden] elements stay in the DOM, so :only-child won't match here. */
+.note-grid:has(> #mac-unsigned-note[hidden]) {
+  grid-template-columns: 1fr;
+}
+
 .note-card {
   background: var(--drawer);
   border: 1px solid var(--border);
@@ -695,6 +730,10 @@ main {
   padding: 1.2rem 1.25rem;
   font-size: 0.9rem;
   color: var(--dim);
+  /* Grid items default to min-width: auto, so the long single-line shell
+     command in the <pre> below was forcing this card (and the whole page)
+     wider than the viewport instead of scrolling within its own overflow-x. */
+  min-width: 0;
 }
 
 .note-card.is-emphasized {
