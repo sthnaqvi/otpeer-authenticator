@@ -30,17 +30,24 @@ open "/Applications/OTPeer Authenticator.app"
 
 ## Build from source
 
-From the monorepo root:
+Install dependencies at the **monorepo root** only (`npm install` does not
+apply inside this package alone).
+
+From the repo root:
 
 ```bash
 npm install
-npm run build --workspace=@authenticator/core
-cd packages/desktop
-npm run start    # build + launch
-npm run dist     # package installers locally
+npm run desktop    # build + launch Electron app
 ```
 
-See the [root README](../../README.md) for monorepo layout and release tagging.
+Or from this package (desktop only):
+
+```bash
+npm run start      # build + launch (rebuilds core if needed)
+npm run dist       # package installers locally
+```
+
+See the [root README](../../README.md) for the full command table and monorepo layout.
 
 ## Screenshots for otpeer.com
 

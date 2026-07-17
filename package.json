@@ -8,10 +8,16 @@
     "website"
   ],
   "scripts": {
-    "build": "npm run build --workspace=packages/core && npm run vendor-core --workspace=authenticator-clui",
-    "test": "npm run test --workspace=packages/core",
+    "start": "node scripts/dev_help.js",
+    "build": "npm run build --workspace=@authenticator/core && npm run vendor-core --workspace=authenticator-clui && npm run vendor-core --workspace=otpeer-authenticator",
+    "test": "npm run test --workspace=@authenticator/core",
+    "desktop": "npm run start --workspace=otpeer-authenticator",
+    "cli": "node packages/cli/bin.js",
+    "website": "npm run website:dev",
     "website:dev": "npm run dev --workspace=otpeer-website",
-    "website:build": "npm run build --workspace=otpeer-website"
+    "website:build": "npm run build --workspace=otpeer-website",
+    "mobile": "node -e \"console.error('Mobile app is not in this repo yet'); process.exit(1)\"",
+    "postinstall": "npm run build --workspace=@authenticator/core"
   },
   "repository": {
     "type": "git",
