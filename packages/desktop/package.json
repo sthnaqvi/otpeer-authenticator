@@ -2,7 +2,7 @@
   "name": "otpeer-authenticator",
   "productName": "OTPeer Authenticator",
   "desktopName": "otpeer-authenticator",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "OTPeer Authenticator — two-factor codes with serverless peer-to-peer sync. Desktop app.",
   "main": "dist-electron/main.js",

@@ -89,7 +89,7 @@ function installMockApiOnce() {
     ipcMain.handle('accounts:list', async () => (current_scene === 'unlock' ? [] : SAMPLE_ACCOUNTS));
     ipcMain.handle('biometric:status', async () => ({ available: false, enabled: false, label: 'Touch ID' }));
     ipcMain.handle('settings:get', async () => ({ autoUpdate: true, autoLockMinutes: 0, biometricUnlock: false }));
-    ipcMain.handle('app:version', async () => '0.1.0');
+    ipcMain.handle('app:version', async () => '0.1.3');
     ipcMain.handle('issuer:icon', async (_e, domain) => {
         const map = {
             'github.com': 'github.png',
