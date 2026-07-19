@@ -43,7 +43,10 @@ export interface OtpeerApi {
     startSyncHost(): Promise<{ applied: boolean; summary: SyncSummary }>;
     joinSync(target: string, code?: string): Promise<{ applied: boolean; summary: SyncSummary }>;
     ensureCameraAccess(): Promise<boolean>;
-    captureScreenForQr(): Promise<string | null>;
+    captureScreenForQr(): Promise<
+        | { ok: true; dataUrl: string }
+        | { ok: false; reason: 'permission' | 'empty' | 'unavailable' }
+    >;
     respondSyncConfirm(ok: boolean): void;
     onSyncReady(cb: (info: { uri: string; code: string; qrSvg: string }) => void): void;
     onSyncConfirm(cb: (summary: SyncSummary) => void): void;

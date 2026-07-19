@@ -2,7 +2,7 @@
   "name": "otpeer-authenticator",
   "productName": "OTPeer Authenticator",
   "desktopName": "otpeer-authenticator",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "OTPeer Authenticator — two-factor codes with serverless peer-to-peer sync. Desktop app.",
   "main": "dist-electron/main.js",
@@ -14,6 +14,7 @@
     "start": "npm run build && node scripts/brand_electron_dev.js && OTPEER_DISABLE_UPDATER=1 electron .",
     "brand:electron": "node scripts/brand_electron_dev.js",
     "smoke": "npm run vendor-core && npm run build:main && node scripts/smoke.js",
+    "test": "node --experimental-strip-types --test src/renderer/user_errors.test.ts",
     "capture:screenshots": "npm run build && OTPEER_DISABLE_UPDATER=1 electron scripts/capture_marketing_screenshots.js",
     "pack": "npm run build && node -e \"require('fs').mkdirSync('node_modules',{recursive:true})\" && electron-builder --dir",
     "dist": "npm run build && node -e \"require('fs').mkdirSync('node_modules',{recursive:true})\" && electron-builder"

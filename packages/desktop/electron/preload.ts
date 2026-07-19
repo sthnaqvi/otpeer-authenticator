@@ -43,7 +43,10 @@ const api = {
     startSyncHost: () => ipcRenderer.invoke('sync:host'),
     joinSync: (target: string, code?: string) => ipcRenderer.invoke('sync:join', target, code),
     ensureCameraAccess: () => ipcRenderer.invoke('sync:ensureCamera') as Promise<boolean>,
-    captureScreenForQr: () => ipcRenderer.invoke('sync:captureScreen') as Promise<string | null>,
+    captureScreenForQr: () => ipcRenderer.invoke('sync:captureScreen') as Promise<
+        | { ok: true; dataUrl: string }
+        | { ok: false; reason: 'permission' | 'empty' | 'unavailable' }
+    >,
     respondSyncConfirm: (ok: boolean) => ipcRenderer.send('sync:confirm-response', ok),
     onSyncReady: (cb: (info: { uri: string; code: string; qrSvg: string }) => void) => {
         ipcRenderer.on('sync:ready', (_e, info) => cb(info));

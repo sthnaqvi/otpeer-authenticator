@@ -1,7 +1,7 @@
 import {
     app, BrowserWindow, ipcMain, dialog, powerMonitor, session,
     Tray, Menu, nativeImage, shell, safeStorage, systemPreferences,
-    desktopCapturer, Notification,
+    Notification,
 } from 'electron';
 import path from 'path';
 import fs from 'fs';
@@ -9,6 +9,7 @@ import { VaultService } from './vault-service';
 import { resolveIssuerIconDataUrl } from './issuer_icons';
 import { TrayPopup, type TrayPopupState, type TrayLastUsedView } from './tray_popup';
 import { clearClipboardRestore, copyOtpPreservingClipboard } from './clipboard_otp';
+import { captureScreenForQr } from './screen_capture';
 
 /**
  * Thin wiring: fixed portrait window, menu-bar tray with last-used quick-copy,
@@ -589,16 +590,7 @@ function registerIpc(): void {
         }
         return true;
     });
-    ipcMain.handle('sync:captureScreen', async () => {
-        const sources = await desktopCapturer.getSources({
-            types: ['screen'],
-            // Higher than 1080p — small browser setup QRs fail at 1920×1080.
-            thumbnailSize: { width: 3840, height: 2160 },
-        });
-        const primary = sources[0];
-        if (!primary || primary.thumbnail.isEmpty()) return null;
-        return primary.thumbnail.toDataURL();
-    });
+    ipcMain.handle('sync:captureScreen', () => captureScreenForQr());
 
     ipcMain.handle('settings:get', () => loadSettings());
     ipcMain.handle('settings:set', (_e, patch: Partial<Settings>) => {

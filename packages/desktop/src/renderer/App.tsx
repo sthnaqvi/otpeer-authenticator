@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { AccountView, SyncSummary } from './api';
 import { IssuerAvatar } from './IssuerAvatar';
 import { decodeQrFromVideoFrame, decodeQrFromDataUrl, decodeQrFromFile } from './qr_scan';
+import { captureScreenUserMessage, toUserMessage } from './user_errors';
 import markUrl from './assets/mark.png';
 
 const api = window.otpeer;
@@ -524,14 +525,14 @@ function AccountRow({ account, menuOpen, onMenuOpenChange, onCopied, onChanged, 
             confirmLabel: 'Remove',
             type: 'warning',
         })) {
-            await api.removeAccount(account.id).catch((e) => onError(e.message));
+            await api.removeAccount(account.id).catch((e) => onError(toUserMessage(e, 'generic')));
             onChanged();
         }
     };
 
     const rename = async (e: React.FormEvent) => {
         e.preventDefault();
-        await api.renameAccount(account.id, newName).catch((e) => onError(e.message));
+        await api.renameAccount(account.id, newName).catch((e) => onError(toUserMessage(e, 'generic')));
         setRenaming(false);
         onChanged();
     };
@@ -700,7 +701,7 @@ function AddDialog({
             }
             startVerify(id, title);
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'add'));
             setBusy(false);
         }
     };
@@ -716,7 +717,7 @@ function AddDialog({
             );
             onClose();
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'import'));
             setBusy(false);
         }
     };
@@ -750,7 +751,7 @@ function AddDialog({
             const { id } = await api.addAccount({ name, issuer: issuer || undefined, secret });
             startVerify(id, issuer ? `${issuer} (${name})` : name);
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'add'));
             setBusy(false);
         }
     };
@@ -778,13 +779,13 @@ function AddDialog({
         setLocalError('');
         setScanMode('busy');
         try {
-            const data_url = await api.captureScreenForQr();
-            if (!data_url) {
-                setLocalError('Could not capture the screen. Try choosing a screenshot image instead.');
+            const capture = await api.captureScreenForQr();
+            if (!capture.ok) {
+                setLocalError(captureScreenUserMessage(capture.reason));
                 setScanMode('idle');
                 return;
             }
-            const payload = await decodeQrFromDataUrl(data_url);
+            const payload = await decodeQrFromDataUrl(capture.dataUrl);
             if (!payload) {
                 setLocalError('No account QR found on screen. Show the setup QR larger, or pick a screenshot.');
                 setScanMode('idle');
@@ -792,7 +793,7 @@ function AddDialog({
             }
             applyScannedPayload(payload);
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'add'));
             setScanMode('idle');
         }
     };
@@ -810,7 +811,7 @@ function AddDialog({
             }
             applyScannedPayload(payload);
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'add'));
             setScanMode('idle');
         }
     };
@@ -1024,7 +1025,7 @@ function ImportDialog({ onClose, onToast }: { onClose: () => void; onToast: (m: 
                 (result.conflicts.length ? `, ${result.conflicts.length} conflicts kept existing` : ''));
             onClose();
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'import'));
         }
     };
 
@@ -1064,7 +1065,7 @@ function ExportDialog({ onClose, onToast }: { onClose: () => void; onToast: (m: 
             onToast('Encrypted backup downloaded');
             onClose();
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'export'));
         }
     };
 
@@ -1129,7 +1130,7 @@ function SetPasswordDialog({
             }
             onClose();
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'vault'));
             setBusy(false);
         }
     };
@@ -1203,11 +1204,11 @@ function SyncDialog({ onClose }: { onClose: () => void }) {
             ? `✓ Synced: ${describeSummary(outcome.summary)}`
             : 'Sync declined — nothing was changed on either device');
     };
-    const fail = (err: Error, fallback: 'menu' | 'joining' = 'menu') => {
+    const fail = (err: unknown, fallback: 'menu' | 'joining' = 'menu') => {
         setConfirmSummary(null);
         setReady(null);
         setScanMode('idle');
-        setLocalError(err.message);
+        setLocalError(toUserMessage(err, 'sync'));
         setMode(fallback);
     };
 
@@ -1245,13 +1246,13 @@ function SyncDialog({ onClose }: { onClose: () => void }) {
         setLocalError('');
         setScanMode('busy');
         try {
-            const data_url = await api.captureScreenForQr();
-            if (!data_url) {
-                setLocalError('Could not capture the screen. Try choosing a screenshot image instead.');
+            const capture = await api.captureScreenForQr();
+            if (!capture.ok) {
+                setLocalError(captureScreenUserMessage(capture.reason));
                 setScanMode('idle');
                 return;
             }
-            const payload = await decodeQrFromDataUrl(data_url);
+            const payload = await decodeQrFromDataUrl(capture.dataUrl);
             if (!payload) {
                 setLocalError('No sync QR found on screen. Make sure the other device’s QR is visible, or pick a screenshot.');
                 setScanMode('idle');
@@ -1259,7 +1260,7 @@ function SyncDialog({ onClose }: { onClose: () => void }) {
             }
             applyScannedPayload(payload);
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'sync'));
             setScanMode('idle');
         }
     };
@@ -1277,7 +1278,7 @@ function SyncDialog({ onClose }: { onClose: () => void }) {
             }
             applyScannedPayload(payload);
         } catch (err) {
-            setLocalError((err as Error).message);
+            setLocalError(toUserMessage(err, 'sync'));
             setScanMode('idle');
         }
     };
@@ -1592,7 +1593,7 @@ function QrCameraScanner({
                 await video.play();
                 raf = requestAnimationFrame(tick);
             } catch (err) {
-                on_error_ref.current((err as Error).message || 'Could not open the camera.');
+                on_error_ref.current(toUserMessage(err, 'camera'));
             }
         })();
 
@@ -1678,7 +1679,7 @@ function SettingsPanel({ onSetPassword }: { onSetPassword: () => void }) {
             await refreshVaultState();
             setVaultMsg('Vault password removed');
         } catch (err) {
-            setVaultMsg((err as Error).message);
+            setVaultMsg(toUserMessage(err, 'vault'));
         } finally {
             setBusy(false);
         }
@@ -1692,7 +1693,7 @@ function SettingsPanel({ onSetPassword }: { onSetPassword: () => void }) {
             setBiometric(next);
             setSettings(await api.getSettings());
         } catch (err) {
-            setVaultMsg((err as Error).message);
+            setVaultMsg(toUserMessage(err, 'biometric'));
         } finally {
             setBusy(false);
         }
@@ -1705,7 +1706,10 @@ function SettingsPanel({ onSetPassword }: { onSetPassword: () => void }) {
         setUpdateAvailable(false);
         const result = await api.checkForUpdates();
         if (result.status !== 'ok') {
-            setUpdateMsg(`Unavailable (${result.message ?? result.status})`);
+            const detail = result.message
+                ? toUserMessage(result.message, 'generic')
+                : (result.status ?? 'error');
+            setUpdateMsg(`Unavailable (${detail})`);
             return;
         }
         const current = result.currentVersion ?? version;
